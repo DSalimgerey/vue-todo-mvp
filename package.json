@@ -19,6 +19,8 @@
     "eslint": "^8.34.0",
     "eslint-plugin-vue": "^9.9.0",
     "prettier": "^2.8.4",
-    "vite": "^4.1.4"
+    "vite": "^4.1.4",
+    "vite-plugin-windicss": "^1.8.10",
+    "windicss": "^3.5.6"
   }
 }
