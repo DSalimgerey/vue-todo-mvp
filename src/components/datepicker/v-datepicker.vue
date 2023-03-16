@@ -10,6 +10,15 @@ export default {
       required: true,
       validator: (value) => (isArray(value) ? isValidRange(value) : isDate(value))
     }
+  },
+  emits: {
+    ['update:modelValue'](payload) {
+      if (isValidRange(payload) || isDate(payload)) {
+        return true
+      } else {
+        return false
+      }
+    }
   }
 }
 </script>
