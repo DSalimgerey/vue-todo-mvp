@@ -1,4 +1,6 @@
 <script>
+// todo: todo item should be link if option has 'href' property
+
 export default {
   name: 'v-dropdown-item',
   computed: {
