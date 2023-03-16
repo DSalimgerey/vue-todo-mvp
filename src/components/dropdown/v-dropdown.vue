@@ -207,7 +207,7 @@ export default {
               v-else
               :is="option.key === 'divider' ? 'v-dropdown-divider' : 'v-dropdown-item'"
             >
-              <span class="text-[13px]">{{ option.text }}</span>
+              <slot name="option" :option="option">{{ option.text }}</slot>
             </component>
           </template>
         </ul>
