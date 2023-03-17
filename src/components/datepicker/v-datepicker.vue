@@ -3,8 +3,9 @@ import { ref } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { usePopper } from '../../composables/use-popper'
 import { isArray } from '../../utils'
-import { isDate, isValidRange } from './utils'
+import { format, isDate, isValidRange } from './utils'
 import VCalendar from './v-calendar.vue'
+import { BASE_DATE_FORMAT } from '../../utils/constants'
 
 export default {
   name: 'v-datepicker',
@@ -15,8 +16,7 @@ export default {
   props: {
     modelValue: {
       type: [Date, Array],
-      required: true,
-      validator: (value) => (isArray(value) ? isValidRange(value) : isDate(value))
+      required: true
     }
   },
 
@@ -53,6 +53,14 @@ export default {
     }
   },
 
+  computed: {
+    displayDate() {
+      return isArray(this.modelValue)
+        ? this.modelValue.map((d) => format(d, BASE_DATE_FORMAT)).join(' -- ')
+        : format(this.modelValue, BASE_DATE_FORMAT)
+    }
+  },
+
   methods: {
     onDateSelect(date) {
       this.$emit('update:modelValue', date)
@@ -63,7 +71,7 @@ export default {
 
 <template>
   <div ref="reference" @click="toggle">
-    <button>datepicker</button>
+    <button class="text-[12px]">{{ displayDate }}</button>
   </div>
   <teleport v-if="isOpen" to="body">
     <div ref="popper" class="bg-white">
