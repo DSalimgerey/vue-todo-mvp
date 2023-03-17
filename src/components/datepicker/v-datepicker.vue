@@ -68,7 +68,10 @@ export default {
     <button>datepicker</button>
   </div>
   <teleport v-if="isOpen" to="body">
-    <div ref="popper">
+    <div
+      ref="popper"
+      class="bg-white border shadow shadow-lg shadow-dark-900/5 p-[12px] rounded-[4px]"
+    >
       <v-calendar :value="modelValue" @select="onDateSelect($event)"></v-calendar>
     </div>
   </teleport>
