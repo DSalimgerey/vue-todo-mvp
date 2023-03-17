@@ -8,7 +8,7 @@ export default {
 
   data() {
     return {
-      date: new Date(2023, 3, 18)
+      date: [new Date(2023, 2, 14), new Date()]
     }
   },
 
