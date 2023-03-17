@@ -1,9 +1,17 @@
 <script>
+import { ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
+import { usePopper } from '../../composables/use-popper'
 import { isArray } from '../../utils'
 import { isDate, isValidRange } from './utils'
+import VCalendar from './v-calendar.vue'
 
 export default {
   name: 'v-datepicker',
+  components: {
+    VCalendar
+  },
+
   props: {
     modelValue: {
       type: [Date, Array],
@@ -11,6 +19,7 @@ export default {
       validator: (value) => (isArray(value) ? isValidRange(value) : isDate(value))
     }
   },
+
   emits: {
     ['update:modelValue'](payload) {
       if (isValidRange(payload) || isDate(payload)) {
@@ -18,11 +27,49 @@ export default {
       } else {
         return false
       }
+    },
+    open: null,
+    close: null
+  },
+
+  setup(_, ctx) {
+    const reference = ref(null)
+    const popper = ref(null)
+    const { isOpen, open, close } = usePopper(reference, popper, {
+      emit: ctx.emit
+    })
+
+    const toggle = () => {
+      isOpen.value ? close() : open()
+    }
+
+    onClickOutside(popper, close)
+
+    return {
+      reference,
+      popper,
+      isOpen,
+      open,
+      close,
+      toggle
+    }
+  },
+
+  methods: {
+    onDateSelect(date) {
+      this.$emit('update:modelValue', date)
     }
   }
 }
 </script>
 
 <template>
-  <div></div>
+  <div ref="reference" @click="toggle">
+    <button>datepicker</button>
+  </div>
+  <teleport v-if="isOpen" to="body">
+    <div ref="popper">
+      <v-calendar :value="modelValue" @select="onDateSelect($event)"></v-calendar>
+    </div>
+  </teleport>
 </template>
