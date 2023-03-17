@@ -101,20 +101,20 @@ export default {
       if (this.isRange) {
         if (this.isRangeStartFocused) {
           this.updateRangeStart(date)
-          this.$emit(
-            'select',
-            Object.values(this.range).map((v) => toDate(v))
-          )
+          this.submitRanges()
         } else {
           this.updateRangeEnd(date)
-          this.$emit(
-            'select',
-            Object.values(this.range).map((v) => toDate(v))
-          )
+          this.submitRanges()
         }
       } else {
         this.$emit('select', date)
       }
+    },
+    submitRanges() {
+      this.$emit(
+        'select',
+        Object.values(this.range).map((v) => toDate(v))
+      )
     },
     focusStartRangeInput() {
       this.$nextTick(() => {
