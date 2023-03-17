@@ -2,8 +2,9 @@
 import dayjs from 'dayjs'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { DAYS_AMOUNT_OF_CALENDAR, WEEKDAYS, BASE_DATE_FORMAT } from '../../utils/constants'
-import { isSame, format, toDate } from './utils'
-import { focus } from '../../utils'
+import { isSame, format, toDate, isValidRange, isBetween } from './utils'
+import { focus, isArray } from '../../utils'
+import { isActiveElement } from '../../../../vue-fire-todo-app/src/components/datepicker/utlls'
 
 export default {
   name: 'v-calendar',
@@ -14,8 +15,8 @@ export default {
 
   props: {
     value: {
-      type: Date,
-      default: () => new Date()
+      type: [Date, Array],
+      required: true
     }
   },
 
@@ -23,17 +24,24 @@ export default {
 
   data() {
     const weekdays = WEEKDAYS
+    const isRange = isArray(this.value)
+    const range = {
+      start: isValidRange(this.value) ? this.value[0] : new Date(),
+      end: isValidRange(this.value) ? this.value[1] : new Date()
+    }
+
     return {
       activeDate: new Date(),
       now: new Date(),
-      weekdays
+      weekdays,
+      isRange,
+      range,
+      isRangeStartFocused: false,
+      isRangeEndFocused: false
     }
   },
 
   computed: {
-    formattedDate() {
-      return format(this.value, BASE_DATE_FORMAT)
-    },
     label() {
       return `${format(this.activeDate, 'MMMM')} ${format(this.activeDate, 'YYYY')}`
     },
@@ -61,20 +69,22 @@ export default {
   watch: {
     value: {
       handler(value) {
-        this.activeDate = value
+        this.activeDate = isArray(value) ? new Date() : value
       },
       immediate: true
     }
   },
 
   mounted() {
-    this.$nextTick(() => {
-      focus(this.$refs.input)
-    })
+    this.focusStartRangeInput()
   },
 
   methods: {
     isSame,
+    isBetween,
+    formatDate(value) {
+      return format(value, BASE_DATE_FORMAT)
+    },
     prev() {
       this.activeDate = dayjs(this.activeDate).clone().subtract(1, 'month')
     },
@@ -85,7 +95,50 @@ export default {
       this.activeDate = dayjs(this.activeDate).clone().add(1, 'month')
     },
     select(date) {
-      this.$emit('select', date)
+      date =
+        this.isRangeStartFocused || this.isRangeEndFocused ? format(date, BASE_DATE_FORMAT) : date
+
+      if (this.isRange) {
+        if (this.isRangeStartFocused) {
+          this.updateRangeStart(date)
+          this.$emit(
+            'select',
+            Object.values(this.range).map((v) => toDate(v))
+          )
+        } else {
+          this.updateRangeEnd(date)
+          this.$emit(
+            'select',
+            Object.values(this.range).map((v) => toDate(v))
+          )
+        }
+      } else {
+        this.$emit('select', date)
+      }
+    },
+    focusStartRangeInput() {
+      this.$nextTick(() => {
+        const rangeStartInput = this.$refs.start
+
+        focus(rangeStartInput)
+        if (isActiveElement(rangeStartInput)) {
+          this.isRangeStartFocused = true
+        }
+      })
+    },
+    focusRangeStart() {
+      this.isRangeStartFocused = true
+      this.isRangeEndFocused = false
+    },
+    focusRangeEnd() {
+      this.isRangeEndFocused = true
+      this.isRangeStartFocused = false
+    },
+    updateRangeStart(date) {
+      this.range.start = date
+    },
+    updateRangeEnd(date) {
+      this.range.end = date
     }
   }
 }
@@ -95,15 +148,35 @@ export default {
   <div class="v-calendar">
     <div class="v-calendar__header">
       <div class="mb-[6px]">
-        <div>
+        <div v-if="isRange" class="flex">
           <input
-            :value="formattedDate"
+            :value="formatDate(range.start)"
+            ref="start"
+            class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] mr-[6px] px-[4px] ring-blue-500/10 focus:ring-2"
+            :class="{ 'border-sky-600 bg-blue-500/5': isRangeStartFocused }"
+            type="text"
+            placeholder="Date"
+            @focus="focusRangeStart"
+          />
+          <input
+            :value="formatDate(range.end)"
+            ref="end"
+            class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] mr-[6px] px-[4px] ring-blue-500/10 focus:ring-2"
+            :class="{ 'border-sky-600 bg-blue-500/5': isRangeEndFocused }"
+            type="text"
+            placeholder="Date"
+            @focus="focusRangeEnd"
+          />
+        </div>
+        <template v-else>
+          <input
+            :value="formatDate(value)"
             ref="input"
             class="w-full h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] mr-[6px] px-[4px] ring-blue-500/10 focus:ring-2"
             type="text"
             placeholder="Date"
           />
-        </div>
+        </template>
       </div>
       <div class="flex items-center justify-between">
         <span class="v-calendar__label">{{ label }}</span>
@@ -135,7 +208,14 @@ export default {
           :class="{
             'v-calendar__day--today': day.isToday,
             'v-calendar__day--outside': day.isOutside,
-            'v-calendar__day--selected': isSame(day.Date, value)
+            'v-calendar__day--selected': !isRange && isSame(day.Date, value),
+            'v-calendar__day--range-start': isRange && isSame(day.Date, range.start),
+            'v-calendar__day--range': isRange && isBetween(day.Date, range.start, range.end),
+            'v-calendar__day--range-end': isRange && isSame(day.Date, range.end),
+            'v-calendar__day--range-start-focused':
+              isRange && isRangeStartFocused && isSame(day.Date, range.start),
+            'v-calendar__day--range-end-focused':
+              isRange && isRangeEndFocused && isSame(day.Date, range.end)
           }"
           @click="select(day.Date)"
         >
@@ -179,5 +259,26 @@ export default {
 }
 .v-calendar__day--selected {
   @apply text-white !bg-sky-600 !rounded-[2px] !border-[transparent];
+}
+.v-calendar__day--range {
+  @apply !bg-blue-500/10 !rounded-[0px] border-[transparent];
+}
+.v-calendar__day--range-start {
+  @apply !bg-sky-600/60 text-dark-900;
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+.v-calendar__day--range-end {
+  @apply !bg-sky-600/60 text-dark-900;
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+}
+.v-calendar__day--range-start-focused,
+.v-calendar__day--range-end-focused {
+  @apply !bg-sky-600 !text-white;
+}
+
+.v-calendar__day--selected {
+  @apply text-white !bg-sky-600 !rounded-[2px];
 }
 </style>
