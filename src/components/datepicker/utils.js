@@ -1,4 +1,8 @@
 import dayjs from 'dayjs'
+import isBetweenPlugin from 'dayjs/plugin/isBetween'
+
+dayjs.extend(isBetweenPlugin)
+
 import { isArray } from '../../utils'
 
 /**
@@ -24,6 +28,10 @@ export const isValidRange = (range) => isArray(range) && range.every(isDate) && 
 export const isSame = (d1, d2, unit = 'date') => dayjs(d1).isSame(d2, unit)
 
 export const toString = (date) => dayjs(date).toString()
+
 export const toDate = (value) => dayjs(value).toDate()
 
 export const format = (date, template) => dayjs(date).format(template)
+
+export const isBetween = (date, start, end, unit = 'date') =>
+  dayjs(date).isBetween(dayjs(start).subtract(1, 'day'), dayjs(end).add(1, 'day'), unit)
