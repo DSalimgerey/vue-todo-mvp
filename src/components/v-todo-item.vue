@@ -1,4 +1,24 @@
-<script></script>
+<script>
+import VDatepicker from './datepicker/v-datepicker.vue'
+
+export default {
+  components: {
+    VDatepicker
+  },
+
+  data() {
+    return {
+      date: new Date(2023, 3, 18)
+    }
+  },
+
+  watch: {
+    date(value) {
+      console.log(value)
+    }
+  }
+}
+</script>
 
 <template>
   <li class="flex py-[3px]">
@@ -11,6 +31,7 @@
       </div>
       <div class="flex">
         <button class="text-[11px]">15 mar</button>
+        <v-datepicker v-model="date"></v-datepicker>
       </div>
     </div>
   </li>
