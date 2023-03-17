@@ -1,8 +1,9 @@
 <script>
 import dayjs from 'dayjs'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
-import { DAYS_AMOUNT_OF_CALENDAR, WEEKDAYS } from '../../utils/constants'
+import { DAYS_AMOUNT_OF_CALENDAR, WEEKDAYS, BASE_DATE_FORMAT } from '../../utils/constants'
 import { isSame, format, toDate } from './utils'
+import { focus } from '../../utils'
 
 export default {
   name: 'v-calendar',
@@ -30,6 +31,9 @@ export default {
   },
 
   computed: {
+    formattedDate() {
+      return format(this.value, BASE_DATE_FORMAT)
+    },
     label() {
       return `${format(this.activeDate, 'MMMM')} ${format(this.activeDate, 'YYYY')}`
     },
@@ -63,6 +67,12 @@ export default {
     }
   },
 
+  mounted() {
+    this.$nextTick(() => {
+      focus(this.$refs.input)
+    })
+  },
+
   methods: {
     isSame,
     prev() {
@@ -84,17 +94,30 @@ export default {
 <template>
   <div class="v-calendar">
     <div class="v-calendar__header">
-      <span class="v-calendar__label">{{ label }}</span>
-      <div class="v-calendar__actions-wrapper">
-        <button @click="prev">
-          <chevron-left-icon class="w-[12px] h-[12px] text-gray-500"></chevron-left-icon>
-        </button>
-        <button @click="toCurrentMonth">
-          <div class="w-[12px] h-[12px] rounded-full border border-gray-400"></div>
-        </button>
-        <button @click="next">
-          <chevron-right-icon class="w-[12px] h-[12px] text-gray-500"></chevron-right-icon>
-        </button>
+      <div class="mb-[6px]">
+        <div>
+          <input
+            :value="formattedDate"
+            ref="input"
+            class="w-full h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] mr-[6px] px-[4px] ring-blue-500/10 focus:ring-2"
+            type="text"
+            placeholder="Date"
+          />
+        </div>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="v-calendar__label">{{ label }}</span>
+        <div class="v-calendar__actions-wrapper">
+          <button @click="prev">
+            <chevron-left-icon class="w-[12px] h-[12px] text-gray-500"></chevron-left-icon>
+          </button>
+          <button @click="toCurrentMonth">
+            <div class="w-[10px] h-[10px] rounded-full border border-gray-400"></div>
+          </button>
+          <button @click="next">
+            <chevron-right-icon class="w-[12px] h-[12px] text-gray-500"></chevron-right-icon>
+          </button>
+        </div>
       </div>
     </div>
     <div class="v-calendar__body">
@@ -128,10 +151,10 @@ export default {
   @apply w-[fit-content] h-[fit-content];
 }
 .v-calendar__header {
-  @apply flex items-center justify-between mb-[4px];
+  @apply flex flex-col mb-[2px];
 }
 .v-calendar__label {
-  @apply text-[12px] font-bold;
+  @apply text-[11px] font-bold;
 }
 .v-calendar__actions-wrapper {
   @apply flex items-center;
