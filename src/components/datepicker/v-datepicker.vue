@@ -46,11 +46,9 @@ export default {
     onClickOutside(popper, close)
 
     return {
+      isOpen,
       reference,
       popper,
-      isOpen,
-      open,
-      close,
       toggle
     }
   },
@@ -68,10 +66,7 @@ export default {
     <button>datepicker</button>
   </div>
   <teleport v-if="isOpen" to="body">
-    <div
-      ref="popper"
-      class="bg-white border shadow shadow-lg shadow-dark-900/5 p-[12px] rounded-[4px]"
-    >
+    <div ref="popper" class="bg-white">
       <v-calendar :value="modelValue" @select="onDateSelect($event)"></v-calendar>
     </div>
   </teleport>
