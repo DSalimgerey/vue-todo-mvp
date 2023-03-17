@@ -13,3 +13,17 @@ export const isDate = (date) => dayjs(date).isValid() && date instanceof Date
  * @returns {boolean}
  */
 export const isValidRange = (range) => isArray(range) && range.every(isDate) && range.length === 2
+
+/**
+ *
+ * @param {dayjs.ConfigType} d1
+ * @param {dayjs.ConfigType} d2
+ * @param {dayjs.UnitType} unit
+ * @returns
+ */
+export const isSame = (d1, d2, unit = 'date') => dayjs(d1).isSame(d2, unit)
+
+export const toString = (date) => dayjs(date).toString()
+export const toDate = (value) => dayjs(value).toDate()
+
+export const format = (date, template) => dayjs(date).format(template)
