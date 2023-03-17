@@ -2,9 +2,8 @@
 import dayjs from 'dayjs'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { DAYS_AMOUNT_OF_CALENDAR, WEEKDAYS, BASE_DATE_FORMAT } from '../../utils/constants'
-import { isSame, format, toDate, isValidRange, isBetween } from './utils'
-import { focus, isArray } from '../../utils'
-import { isActiveElement } from '../../../../vue-fire-todo-app/src/components/datepicker/utlls'
+import { isSame, format, toDate, isValidRange, isBetween, isAfter, isBefore } from './utils'
+import { focus, isArray, isActiveElement } from '../../utils'
 
 export default {
   name: 'v-calendar',
@@ -134,11 +133,21 @@ export default {
       this.isRangeEndFocused = true
       this.isRangeStartFocused = false
     },
-    updateRangeStart(date) {
-      this.range.start = date
+    updateRangeStart(value) {
+      if (isAfter(value, this.range.end)) {
+        this.updateRangeEnd(value)
+        this.focusRangeEnd()
+      } else {
+        this.range.start = value
+      }
     },
-    updateRangeEnd(date) {
-      this.range.end = date
+    updateRangeEnd(value) {
+      if (isBefore(value, this.range.start)) {
+        this.updateRangeStart(value)
+        this.focusRangeStart()
+      } else {
+        this.range.end = value
+      }
     }
   }
 }
