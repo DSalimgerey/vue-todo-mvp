@@ -8,9 +8,9 @@ export default {
   },
 
   data() {
-    const floatingStarValue = dayjs(new Date()).subtract(2, 'day').toDate()
+    // const floatingStarValue = dayjs(new Date()).subtract(2, 'day').toDate()
     return {
-      date: [floatingStarValue, new Date()]
+      date: new Date()
     }
   },
 
