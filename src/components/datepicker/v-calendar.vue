@@ -111,11 +111,12 @@ export default {
         this.isRangeStartFocused || this.isRangeEndFocused ? format(date, BASE_DATE_FORMAT) : date
 
       if (this.isRange) {
-        if (this.isRangeStartFocused) {
-          this.updateRangeStart(date)
-          this.submitRanges()
+        if (isSame(this.range.start, date)) {
+          this.focusRangeStart()
+        } else if (isSame(this.range.end, date)) {
+          this.focusRangeEnd()
         } else {
-          this.updateRangeEnd(date)
+          this.isRangeStartFocused ? this.updateRangeStart(date) : this.updateRangeEnd(date)
           this.submitRanges()
         }
       } else {
