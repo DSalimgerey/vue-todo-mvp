@@ -53,3 +53,11 @@ export const isBefore = (d1, d2, unit = 'date') => dayjs(d1).isBefore(d2, unit)
  * @returns {boolean}
  */
 export const isAfter = (d1, d2, unit = 'date') => dayjs(d1).isAfter(d2, unit)
+
+/**
+ *
+ * @param {dayjs.ConfigType} date
+ * @param {dayjs.UnitType} unit
+ * @param {number} value
+ */
+export const setToDate = (date, unit, value) => dayjs(date).set(unit, value)
