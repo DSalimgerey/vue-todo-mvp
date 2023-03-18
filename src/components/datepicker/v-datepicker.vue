@@ -53,6 +53,12 @@ export default {
     }
   },
 
+  data() {
+    return {
+      isRange: false
+    }
+  },
+
   computed: {
     displayDate() {
       return isArray(this.modelValue)
@@ -75,7 +81,19 @@ export default {
   </div>
   <teleport v-if="isOpen" to="body">
     <div ref="popper" class="bg-white">
-      <v-calendar :value="modelValue" @select="onDateSelect($event)"></v-calendar>
+      <v-calendar
+        :value="modelValue"
+        :is-range="isRange"
+        @select="onDateSelect($event)"
+      ></v-calendar>
+
+      <!-- settings -->
+      <div class="mt-[8px]">
+        <div class="w-full flex items-center justify-between">
+          <span>End date</span>
+          <input v-model="isRange" type="checkbox" />
+        </div>
+      </div>
     </div>
   </teleport>
 </template>
