@@ -1,7 +1,23 @@
 <script>
-// TODO:
-// (1) when user submit range end date with input and if that value is before than
-// range's start date we should be show error that value is invalid
+/**
+ *
+ * [ ]. when user submit range end date with input and if that value is before than
+ *      range's start date we should be show error that value is invalid
+ *
+ * [ ]. make input work in default state
+ *
+ * [ ]. focus end date input when set calendar to range state
+ *
+ * [x]. navigate between dates with keyboard
+ *
+ * [ ]. when some date is selected on default calendar state and when user switch to
+ *      range state as range values applied 'new Date()' on 54 and 55 rows.
+ *      Replace 'new Date()' to 'activeDate'
+ *
+ * [ ]. when changing the mode, the value of the input becomes 'Invalid date'
+ *
+ * [ ].
+ */
 
 import dayjs from 'dayjs'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
@@ -16,7 +32,7 @@ import {
   isBefore,
   setToDate
 } from './utils'
-import { focus, isArray, isActiveElement } from '../../utils'
+import { focus, isActiveElement, stopEvent } from '../../utils'
 
 export default {
   name: 'v-calendar',
@@ -29,6 +45,11 @@ export default {
     value: {
       type: [Date, Array],
       required: true
+    },
+    isRange: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
 
@@ -36,7 +57,6 @@ export default {
 
   data() {
     const weekdays = WEEKDAYS
-    const isRange = isArray(this.value)
     const range = {
       start: isValidRange(this.value) ? this.value[0] : new Date(),
       end: isValidRange(this.value) ? this.value[1] : new Date()
@@ -46,10 +66,10 @@ export default {
       activeDate: new Date(),
       now: new Date(),
       weekdays,
-      isRange,
       range,
       isRangeStartFocused: false,
-      isRangeEndFocused: false
+      isRangeEndFocused: false,
+      isCalendarFocused: false
     }
   },
 
@@ -81,7 +101,7 @@ export default {
   watch: {
     value: {
       handler(value) {
-        this.activeDate = isArray(value) ? value[0] : value
+        this.activeDate = this.isRange ? (this.isRangeStartFocused ? value[0] : value[1]) : value
       },
       immediate: true
     }
@@ -89,6 +109,36 @@ export default {
 
   mounted() {
     this.focusStartRangeInput()
+    document.addEventListener('click', this.focusCalendar)
+    document.addEventListener('keydown', (e) => {
+      if (this.isCalendarFocused) {
+        switch (e.code) {
+          case 'ArrowUp':
+            stopEvent(e)
+            this.activeDate = dayjs(this.activeDate).subtract(7, 'day').toDate()
+            break
+          case 'ArrowRight':
+            stopEvent(e)
+            this.activeDate = dayjs(this.activeDate).add(1, 'day').toDate()
+            break
+          case 'ArrowDown':
+            stopEvent(e)
+            this.activeDate = dayjs(this.activeDate).add(7, 'day').toDate()
+            break
+          case 'ArrowLeft':
+            stopEvent(e)
+            this.activeDate = dayjs(this.activeDate).subtract(1, 'day').toDate()
+            break
+          case 'Enter':
+            stopEvent(e)
+            this.select(this.activeDate)
+        }
+      }
+    })
+  },
+
+  beforeUnmount() {
+    document.removeEventListener('click', this.focusCalendar)
   },
 
   methods: {
@@ -116,9 +166,14 @@ export default {
         } else if (isSame(this.range.end, date)) {
           this.focusRangeEnd()
         } else {
-          this.isRangeStartFocused ? this.updateRangeStart(date) : this.updateRangeEnd(date)
+          if (this.isRangeStartFocused) {
+            this.updateRangeStart(date)
+          } else {
+            this.updateRangeEnd(date)
+          }
           this.submitRanges()
         }
+        this.activeDate = toDate(date)
       } else {
         this.$emit('select', date)
       }
@@ -172,6 +227,13 @@ export default {
       const value = e.target.value
       this.isRangeStartFocused ? this.updateRangeStart(value) : this.updateRangeEnd(value)
       this.submitRanges()
+    },
+    focusCalendar(e) {
+      if (e.target.hasAttribute('data-date')) {
+        this.isCalendarFocused = true
+      } else {
+        this.isCalendarFocused = false
+      }
     }
   }
 }
@@ -250,7 +312,8 @@ export default {
             'v-calendar__day--range-start-focused':
               isRange && isRangeStartFocused && isSame(day.Date, range.start),
             'v-calendar__day--range-end-focused':
-              isRange && isRangeEndFocused && isSame(day.Date, range.end)
+              isRange && isRangeEndFocused && isSame(day.Date, range.end),
+            'v-calendar__day--focused': isCalendarFocused && isSame(day.Date, activeDate)
           }"
           @click="select(day.Date)"
         >
@@ -289,15 +352,16 @@ export default {
 .v-calendar__day--outside {
   @apply text-gray-400;
 }
-.v-calendar__day--selected {
-  @apply text-white !bg-sky-600 !rounded-[2px] !border-[transparent];
-}
 .v-calendar__day--range {
   @apply !bg-blue-500/10 !rounded-[0px];
 }
 .v-calendar__day--today {
   @apply !border-gray-400 !rounded-[2px] !font-bold;
 }
+.v-calendar__day--focused {
+  @apply border-sky-600 rounded-[2px] ring ring-[2px] ring-sky-600/10 !bg-sky-600/10;
+}
+
 .v-calendar__day--range-start {
   @apply !bg-sky-600/60 text-dark-900 !border-[transparent];
   border-top-left-radius: 2px;
@@ -312,7 +376,6 @@ export default {
 .v-calendar__day--range-end-focused {
   @apply !bg-sky-600 !text-white !border-[transparent];
 }
-
 .v-calendar__day--selected {
   @apply text-white !bg-sky-600 !rounded-[2px] !border-[transparent];
 }
