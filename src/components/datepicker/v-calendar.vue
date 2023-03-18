@@ -1,8 +1,21 @@
 <script>
+// TODO:
+// (1) when user submit range end date with input and if that value is before than
+// range's start date we should be show error that value is invalid
+
 import dayjs from 'dayjs'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { DAYS_AMOUNT_OF_CALENDAR, WEEKDAYS, BASE_DATE_FORMAT } from '../../utils/constants'
-import { isSame, format, toDate, isValidRange, isBetween, isAfter, isBefore } from './utils'
+import {
+  isSame,
+  format,
+  toDate,
+  isValidRange,
+  isBetween,
+  isAfter,
+  isBefore,
+  setToDate
+} from './utils'
 import { focus, isArray, isActiveElement } from '../../utils'
 
 export default {
@@ -68,7 +81,7 @@ export default {
   watch: {
     value: {
       handler(value) {
-        this.activeDate = isArray(value) ? new Date() : value
+        this.activeDate = isArray(value) ? value[0] : value
       },
       immediate: true
     }
@@ -85,13 +98,13 @@ export default {
       return format(value, BASE_DATE_FORMAT)
     },
     prev() {
-      this.activeDate = dayjs(this.activeDate).clone().subtract(1, 'month')
+      this.activeDate = dayjs(this.activeDate).subtract(1, 'month')
     },
     toCurrentMonth() {
       this.activeDate = toDate(dayjs())
     },
     next() {
-      this.activeDate = dayjs(this.activeDate).clone().add(1, 'month')
+      this.activeDate = dayjs(this.activeDate).add(1, 'month')
     },
     select(date) {
       date =
@@ -134,7 +147,12 @@ export default {
       this.isRangeStartFocused = false
     },
     updateRangeStart(value) {
-      if (isAfter(value, this.range.end)) {
+      if (isBefore(value, this.activeDate, 'year') || isAfter(value, this.activeDate, 'year')) {
+        const date = setToDate(this.range.end, 'year', toDate(value).getFullYear()).toDate()
+
+        this.range.start = value
+        this.updateRangeEnd(date)
+      } else if (isAfter(value, this.range.end)) {
         this.updateRangeEnd(value)
         this.focusRangeEnd()
       } else {
@@ -148,6 +166,11 @@ export default {
       } else {
         this.range.end = value
       }
+    },
+    onKeydown(e) {
+      const value = e.target.value
+      this.isRangeStartFocused ? this.updateRangeStart(value) : this.updateRangeEnd(value)
+      this.submitRanges()
     }
   }
 }
@@ -166,15 +189,17 @@ export default {
             type="text"
             placeholder="Date"
             @focus="focusRangeStart"
+            @keydown.enter="onKeydown"
           />
           <input
             :value="formatDate(range.end)"
             ref="end"
-            class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] mr-[6px] px-[4px] ring-blue-500/10 focus:ring-2"
+            class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] px-[4px] ring-blue-500/10 focus:ring-2"
             :class="{ 'border-sky-600 bg-blue-500/5': isRangeEndFocused }"
             type="text"
             placeholder="Date"
             @focus="focusRangeEnd"
+            @keydown.enter="onKeydown"
           />
         </div>
         <template v-else>
@@ -260,9 +285,6 @@ export default {
 .v-calendar__day {
   @apply w-[24px] h-[24px] text-[12px] flex items-center justify-center hover:bg-gray-100 hover:rounded-[2px] border border-[transparent] leading-3 text-dark-900 outline-none ring-blue-100;
 }
-.v-calendar__day--today {
-  @apply border-gray-400 rounded-[2px];
-}
 .v-calendar__day--outside {
   @apply text-gray-400;
 }
@@ -270,24 +292,27 @@ export default {
   @apply text-white !bg-sky-600 !rounded-[2px] !border-[transparent];
 }
 .v-calendar__day--range {
-  @apply !bg-blue-500/10 !rounded-[0px] border-[transparent];
+  @apply !bg-blue-500/10 !rounded-[0px];
+}
+.v-calendar__day--today {
+  @apply !border-gray-400 !rounded-[2px];
 }
 .v-calendar__day--range-start {
-  @apply !bg-sky-600/60 text-dark-900;
+  @apply !bg-sky-600/60 text-dark-900 !border-[transparent];
   border-top-left-radius: 2px;
   border-bottom-left-radius: 2px;
 }
 .v-calendar__day--range-end {
-  @apply !bg-sky-600/60 text-dark-900;
+  @apply !bg-sky-600/60 text-dark-900 !border-[transparent];
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
 }
 .v-calendar__day--range-start-focused,
 .v-calendar__day--range-end-focused {
-  @apply !bg-sky-600 !text-white;
+  @apply !bg-sky-600 !text-white !border-[transparent];
 }
 
 .v-calendar__day--selected {
-  @apply text-white !bg-sky-600 !rounded-[2px];
+  @apply text-white !bg-sky-600 !rounded-[2px] !border-[transparent];
 }
 </style>
