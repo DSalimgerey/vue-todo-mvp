@@ -295,7 +295,7 @@ export default {
   @apply !bg-blue-500/10 !rounded-[0px];
 }
 .v-calendar__day--today {
-  @apply !border-gray-400 !rounded-[2px];
+  @apply !border-gray-400 !rounded-[2px] !font-bold;
 }
 .v-calendar__day--range-start {
   @apply !bg-sky-600/60 text-dark-900 !border-[transparent];
