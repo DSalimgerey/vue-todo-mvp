@@ -1,4 +1,5 @@
 <script>
+import dayjs from 'dayjs'
 import VDatepicker from './datepicker/v-datepicker.vue'
 
 export default {
@@ -7,8 +8,9 @@ export default {
   },
 
   data() {
+    const floatingStarValue = dayjs(new Date()).subtract(2, 'day').toDate()
     return {
-      date: [new Date(2023, 2, 14), new Date()]
+      date: [floatingStarValue, new Date()]
     }
   },
 
