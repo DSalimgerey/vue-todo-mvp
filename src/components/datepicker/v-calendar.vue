@@ -10,11 +10,11 @@
  *
  * [x]. navigate between dates with keyboard
  *
- * [ ]. when some date is selected on default calendar state and when user switch to
+ * [x]. when some date is selected on default calendar state and when user switch to
  *      range state as range values applied 'new Date()' on 54 and 55 rows.
  *      Replace 'new Date()' to 'activeDate'
  *
- * [ ]. when changing the mode, the value of the input becomes 'Invalid date'
+ * [x]. when changing the mode, the value of the input becomes 'Invalid date'
  *
  * [ ].
  */
@@ -22,17 +22,8 @@
 import dayjs from 'dayjs'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { DAYS_AMOUNT_OF_CALENDAR, WEEKDAYS, BASE_DATE_FORMAT } from '../../utils/constants'
-import {
-  isSame,
-  format,
-  toDate,
-  isValidRange,
-  isBetween,
-  isAfter,
-  isBefore,
-  setToDate
-} from './utils'
-import { focus, isActiveElement, stopEvent } from '../../utils'
+import { isSame, format, toDate, isBetween, isAfter, isBefore, setToDate } from './utils'
+import { focus, isActiveElement, stopEvent, isArray } from '../../utils'
 
 export default {
   name: 'v-calendar',
@@ -56,14 +47,15 @@ export default {
   emits: ['select'],
 
   data() {
+    const activeDate = new Date()
     const weekdays = WEEKDAYS
     const range = {
-      start: isValidRange(this.value) ? this.value[0] : new Date(),
-      end: isValidRange(this.value) ? this.value[1] : new Date()
+      start: null,
+      end: null
     }
 
     return {
-      activeDate: new Date(),
+      activeDate,
       now: new Date(),
       weekdays,
       range,
@@ -101,32 +93,49 @@ export default {
   watch: {
     value: {
       handler(value) {
-        this.activeDate = this.isRange ? (this.isRangeStartFocused ? value[0] : value[1]) : value
+        this.activeDate = isArray(value) ? (this.isRangeStartFocused ? value[0] : value[1]) : value
+      },
+      immediate: true
+    },
+    isRange: {
+      handler(value) {
+        if (value) {
+          if (isArray(this.value)) {
+            this.range = {
+              start: this.value[0],
+              end: this.value[1]
+            }
+            this.activeDate = this.value[1]
+          } else {
+            this.range = { start: this.value, end: this.value }
+            this.activeDate = this.value
+            this.submitRanges()
+          }
+          this.focusRangeInput(this.$refs.end).then(() => this.focusRangeEnd())
+        } else {
+          this.$emit('select', isArray(this.value) ? this.value[0] : this.value)
+        }
       },
       immediate: true
     }
   },
 
   mounted() {
-    this.focusStartRangeInput()
+    this.focusRangeInput(this.$refs.start).then(() => this.focusRangeStart())
     document.addEventListener('click', this.focusCalendar)
     document.addEventListener('keydown', (e) => {
       if (this.isCalendarFocused) {
         switch (e.code) {
           case 'ArrowUp':
-            stopEvent(e)
             this.activeDate = dayjs(this.activeDate).subtract(7, 'day').toDate()
             break
           case 'ArrowRight':
-            stopEvent(e)
             this.activeDate = dayjs(this.activeDate).add(1, 'day').toDate()
             break
           case 'ArrowDown':
-            stopEvent(e)
             this.activeDate = dayjs(this.activeDate).add(7, 'day').toDate()
             break
           case 'ArrowLeft':
-            stopEvent(e)
             this.activeDate = dayjs(this.activeDate).subtract(1, 'day').toDate()
             break
           case 'Enter':
@@ -148,17 +157,19 @@ export default {
       return format(value, BASE_DATE_FORMAT)
     },
     prev() {
-      this.activeDate = dayjs(this.activeDate).subtract(1, 'month')
+      this.activeDate = dayjs(this.activeDate).subtract(1, 'month').toDate()
     },
     toCurrentMonth() {
       this.activeDate = toDate(dayjs())
     },
     next() {
-      this.activeDate = dayjs(this.activeDate).add(1, 'month')
+      this.activeDate = dayjs(this.activeDate).add(1, 'month').toDate()
     },
     select(date) {
       date =
-        this.isRangeStartFocused || this.isRangeEndFocused ? format(date, BASE_DATE_FORMAT) : date
+        this.isRangeStartFocused || this.isRangeEndFocused
+          ? format(date, BASE_DATE_FORMAT)
+          : toDate(date)
 
       if (this.isRange) {
         if (isSame(this.range.start, date)) {
@@ -175,7 +186,7 @@ export default {
         }
         this.activeDate = toDate(date)
       } else {
-        this.$emit('select', date)
+        this.$emit('select', toDate(date))
       }
     },
     submitRanges() {
@@ -184,14 +195,9 @@ export default {
         Object.values(this.range).map((v) => toDate(v))
       )
     },
-    focusStartRangeInput() {
+    async focusRangeInput(ref) {
       this.$nextTick(() => {
-        const rangeStartInput = this.$refs.start
-
-        focus(rangeStartInput)
-        if (isActiveElement(rangeStartInput)) {
-          this.isRangeStartFocused = true
-        }
+        focus(ref)
       })
     },
     focusRangeStart() {
@@ -225,6 +231,7 @@ export default {
     },
     onKeydown(e) {
       const value = e.target.value
+
       this.isRangeStartFocused ? this.updateRangeStart(value) : this.updateRangeEnd(value)
       this.submitRanges()
     },
