@@ -1,5 +1,5 @@
 <script>
-import dayjs from 'dayjs'
+// import dayjs from 'dayjs'
 import VDatepicker from './datepicker/v-datepicker.vue'
 
 export default {
