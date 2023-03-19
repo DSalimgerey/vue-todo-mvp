@@ -232,7 +232,27 @@ export default {
     onKeydown(e) {
       const value = e.target.value
 
-      this.isRangeStartFocused ? this.updateRangeStart(value) : this.updateRangeEnd(value)
+      // so that when you enter and change the start date, the number of days between
+      // the start and end of the range remains the same
+      // for example, the next date is selected as the value of the range - 12 / 15
+      // (there are two days between the two ends of the range: 13 and 14), if the start is changed to 14,
+      // the number of intermediate days will remain (2 days), and the end will shift by 17 (from 15)
+
+      if (this.$refs.start === e.target) {
+        const diff = Math.abs(dayjs(value).diff(this.range.start, 'day'))
+
+        const addOrSubtract = isBefore(value, this.range.start) ? 'subtract' : 'add'
+
+        const updatedRangeEndDateWithDiff = dayjs(this.range.end)
+          [addOrSubtract](diff, 'day')
+          .format(BASE_DATE_FORMAT)
+
+        this.range.start = value
+        this.range.end = updatedRangeEndDateWithDiff
+      } else {
+        this.isRangeStartFocused ? this.updateRangeStart(value) : this.updateRangeEnd(value)
+      }
+
       this.submitRanges()
     },
     focusCalendar(e) {
