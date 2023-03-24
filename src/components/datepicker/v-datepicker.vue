@@ -1,5 +1,5 @@
 <script>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { usePopper } from '../../composables/use-popper'
 import { isArray } from '../../utils'
@@ -32,7 +32,8 @@ export default {
     close: null
   },
 
-  setup(_, ctx) {
+  setup(props, ctx) {
+    const date = ref(props.modelValue)
     const reference = ref(null)
     const popper = ref(null)
     const { isOpen, open, close } = usePopper(reference, popper, {
@@ -45,11 +46,14 @@ export default {
 
     onClickOutside(popper, close)
 
+    watch(date, (value) => ctx.emit('update:modelValue', value))
+
     return {
       isOpen,
       reference,
       popper,
-      toggle
+      toggle,
+      date
     }
   },
 
@@ -65,12 +69,6 @@ export default {
         ? this.modelValue.map((d) => format(d, BASE_DATE_FORMAT)).join(' -- ')
         : format(this.modelValue, BASE_DATE_FORMAT)
     }
-  },
-
-  methods: {
-    onDateSelect(date) {
-      this.$emit('update:modelValue', date)
-    }
   }
 }
 </script>
@@ -81,11 +79,7 @@ export default {
   </div>
   <teleport v-if="isOpen" to="body">
     <div ref="popper" class="bg-white">
-      <v-calendar
-        :value="modelValue"
-        :is-range="isRange"
-        @select="onDateSelect($event)"
-      ></v-calendar>
+      <v-calendar v-model:value="date" :is-range="isRange"></v-calendar>
 
       <!-- settings -->
       <div class="mt-[8px]">
