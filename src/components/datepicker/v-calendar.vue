@@ -1,29 +1,19 @@
 <script>
-/**
- *
- * [ ]. when user submit range end date with input and if that value is before than
- *      range's start date we should be show error that value is invalid
- *
- * [ ]. make input work in default state
- *
- * [ ]. focus end date input when set calendar to range state
- *
- * [x]. navigate between dates with keyboard
- *
- * [x]. when some date is selected on default calendar state and when user switch to
- *      range state as range values applied 'new Date()' on 54 and 55 rows.
- *      Replace 'new Date()' to 'activeDate'
- *
- * [x]. when changing the mode, the value of the input becomes 'Invalid date'
- *
- * [ ].
- */
-
+import { ref } from 'vue'
 import dayjs from 'dayjs'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
+import { useField, useForm } from 'vee-validate'
+import * as yup from 'yup'
 import { DAYS_AMOUNT_OF_CALENDAR, WEEKDAYS, BASE_DATE_FORMAT } from '../../utils/constants'
 import { isSame, format, toDate, isBetween, isAfter, isBefore, setToDate } from './utils'
-import { focus, isActiveElement, stopEvent, isArray } from '../../utils'
+import { focus, stopEvent, isArray } from '../../utils'
+
+const validator = (name, message, format = BASE_DATE_FORMAT) => {
+  return yup.string().test(name, message, function (value) {
+    const { path, createError } = this
+    return dayjs(value, format, true).isValid() || createError({ path, message })
+  })
+}
 
 export default {
   name: 'v-calendar',
@@ -44,21 +34,45 @@ export default {
     }
   },
 
-  emits: ['select'],
+  emits: ['update:value'],
+
+  setup(props, ctx) {
+    const values = ref({
+      start: format(isArray(props.value) ? props.value[0] : props.value, BASE_DATE_FORMAT),
+      end: format(isArray(props.value) ? props.value[1] : props.value, BASE_DATE_FORMAT)
+    })
+
+    const incorrectDateErrorMessage = props.isRange ? 'invalid range' : 'invalid date'
+    const { handleSubmit } = useForm({
+      initialValues: values
+    })
+    const { value: startValue, errorMessage: startValueErrorMessage } = useField(
+      'start',
+      validator('start', incorrectDateErrorMessage),
+      { validateOnValueUpdate: false }
+    )
+
+    const onSubmit = handleSubmit((values) => {
+      const dates = Object.values(values).map((v) => toDate(v))
+      ctx.emit('update:value', isArray(props.value) ? dates : dates[0])
+    })
+
+    return {
+      values,
+      startValue,
+      startValueErrorMessage,
+      onSubmit
+    }
+  },
 
   data() {
     const activeDate = new Date()
     const weekdays = WEEKDAYS
-    const range = {
-      start: null,
-      end: null
-    }
 
     return {
       activeDate,
       now: new Date(),
       weekdays,
-      range,
       isRangeStartFocused: false,
       isRangeEndFocused: false,
       isCalendarFocused: false
@@ -113,7 +127,7 @@ export default {
           }
           this.focusRangeInput(this.$refs.end).then(() => this.focusRangeEnd())
         } else {
-          this.$emit('select', isArray(this.value) ? this.value[0] : this.value)
+          this.$emit('update:value', isArray(this.value) ? this.value[0] : this.value)
         }
       },
       immediate: true
@@ -186,12 +200,12 @@ export default {
         }
         this.activeDate = toDate(date)
       } else {
-        this.$emit('select', toDate(date))
+        this.$emit('update:value', toDate(date))
       }
     },
     submitRanges() {
       this.$emit(
-        'select',
+        'update:value',
         Object.values(this.range).map((v) => toDate(v))
       )
     },
@@ -240,7 +254,6 @@ export default {
 
       if (this.$refs.start === e.target) {
         const diff = Math.abs(dayjs(value).diff(this.range.start, 'day'))
-
         const addOrSubtract = isBefore(value, this.range.start) ? 'subtract' : 'add'
 
         const updatedRangeEndDateWithDiff = dayjs(this.range.end)
@@ -270,18 +283,20 @@ export default {
   <div class="v-calendar">
     <div class="v-calendar__header">
       <div class="mb-[6px]">
-        <div v-if="isRange" class="flex">
+        <div class="flex">
           <input
-            :value="formatDate(range.start)"
+            v-model="startValue"
             ref="start"
             class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] mr-[6px] px-[4px] ring-blue-500/10 focus:ring-2"
             :class="{ 'border-sky-600 bg-blue-500/5': isRangeStartFocused }"
             type="text"
             placeholder="Date"
             @focus="focusRangeStart"
-            @keydown.enter="onKeydown"
+            @blur="onSubmit"
+            @keydown.enter="onSubmit"
           />
           <input
+            v-if="isRange"
             :value="formatDate(range.end)"
             ref="end"
             class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] px-[4px] ring-blue-500/10 focus:ring-2"
@@ -292,15 +307,6 @@ export default {
             @keydown.enter="onKeydown"
           />
         </div>
-        <template v-else>
-          <input
-            :value="formatDate(value)"
-            ref="input"
-            class="w-full h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] mr-[6px] px-[4px] ring-blue-500/10 focus:ring-2"
-            type="text"
-            placeholder="Date"
-          />
-        </template>
       </div>
       <div class="flex items-center justify-between">
         <span class="v-calendar__label">{{ label }}</span>
