@@ -1,12 +1,15 @@
 <script>
 import { ref } from 'vue'
 import dayjs from 'dayjs'
+import customParseFormatPlugin from 'dayjs/plugin/customParseFormat'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
 import { DAYS_AMOUNT_OF_CALENDAR, WEEKDAYS, BASE_DATE_FORMAT } from '../../utils/constants'
 import { isSame, format, toDate, isBetween, isAfter, isBefore, setToDate } from './utils'
 import { focus, stopEvent, isArray } from '../../utils'
+
+dayjs.extend(customParseFormatPlugin)
 
 const validator = (name, message, format = BASE_DATE_FORMAT) => {
   return yup.string().test(name, message, function (value) {
