@@ -54,6 +54,11 @@ export default {
       validator('range-start', incorrectDateErrorMessage, BASE_DATE_FORMAT),
       { validateOnValueUpdate: false }
     )
+    const { value: endValue, errorMessage: endValueErrorMessage } = useField(
+      'end',
+      validator('range-end', incorrectDateErrorMessage, BASE_DATE_FORMAT),
+      { validateOnValueUpdate: false }
+    )
 
     const onSubmit = handleSubmit((values) => {
       console.log(values)
@@ -65,6 +70,8 @@ export default {
       values,
       startValue,
       startValueErrorMessage,
+      endValue,
+      endValueErrorMessage,
       onSubmit
     }
   },
