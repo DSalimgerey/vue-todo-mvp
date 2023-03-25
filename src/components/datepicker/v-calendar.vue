@@ -303,7 +303,7 @@ export default {
                 }
               ]"
               type="text"
-              placeholder="Date"
+              :placeholder="isRange ? 'Start date' : 'Date'"
               @focus="focusRangeStart"
               @blur="onSubmit"
               @keydown.enter="onSubmit"
