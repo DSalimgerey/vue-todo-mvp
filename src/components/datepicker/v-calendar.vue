@@ -237,10 +237,16 @@ export default {
     focusRangeStart() {
       this.isRangeStartFocused = true
       this.isRangeEndFocused = false
+      if (this.isRange) {
+        this.activeDate = dayjs(this.values.start, BASE_DATE_FORMAT).toDate()
+      }
     },
     focusRangeEnd() {
       this.isRangeEndFocused = true
       this.isRangeStartFocused = false
+      if (this.isRange) {
+        this.activeDate = dayjs(this.values.end, BASE_DATE_FORMAT).toDate()
+      }
     },
     updateRangeStart(value) {
       if (this.isRange) {
