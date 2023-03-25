@@ -48,11 +48,12 @@ export default {
     })
     const { value: startValue, errorMessage: startValueErrorMessage } = useField(
       'start',
-      validator('start', incorrectDateErrorMessage),
+      validator('range-start', incorrectDateErrorMessage, BASE_DATE_FORMAT),
       { validateOnValueUpdate: false }
     )
 
     const onSubmit = handleSubmit((values) => {
+      console.log(values)
       const dates = Object.values(values).map((v) => toDate(v))
       ctx.emit('update:value', isArray(props.value) ? dates : dates[0])
     })
