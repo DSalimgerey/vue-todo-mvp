@@ -357,7 +357,7 @@ export default {
               ]"
               type="text"
               placeholder="End date"
-              @focus="focusRangeStart"
+              @focus="focusRangeEnd"
               @blur="onSubmit"
               @keydown.enter="onSubmit"
             />
