@@ -285,17 +285,22 @@ export default {
     <div class="v-calendar__header">
       <div class="mb-[6px]">
         <div class="flex">
-          <input
-            v-model="startValue"
-            ref="start"
-            class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] mr-[6px] px-[4px] ring-blue-500/10 focus:ring-2"
-            :class="{ 'border-sky-600 bg-blue-500/5': isRangeStartFocused }"
-            type="text"
-            placeholder="Date"
-            @focus="focusRangeStart"
-            @blur="onSubmit"
-            @keydown.enter="onSubmit"
-          />
+          <div class="flex flex-col">
+            <input
+              v-model="startValue"
+              ref="start"
+              class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] mr-[6px] px-[4px] ring-blue-500/10 focus:ring-2"
+              :class="{ 'border-sky-600 bg-blue-500/5': isRangeStartFocused }"
+              type="text"
+              placeholder="Date"
+              @focus="focusRangeStart"
+              @blur="onSubmit"
+              @keydown.enter="onSubmit"
+            />
+            <span v-show="startValueErrorMessage" class="text-[12px] text-red-500">{{
+              startValueErrorMessage
+            }}</span>
+          </div>
           <input
             v-if="isRange"
             :value="formatDate(range.end)"
