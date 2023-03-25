@@ -46,7 +46,7 @@ export default {
     })
 
     const incorrectDateErrorMessage = props.isRange ? 'invalid range' : 'invalid date'
-    const { handleSubmit } = useForm({
+    const { handleSubmit, setValues, setFieldValue } = useForm({
       initialValues: values
     })
     const { value: startValue, errorMessage: startValueErrorMessage } = useField(
@@ -60,11 +60,13 @@ export default {
       { validateOnValueUpdate: false }
     )
 
-    const onSubmit = handleSubmit((values) => {
-      console.log(values)
-      const dates = Object.values(values).map((v) => toDate(v))
+    const onSubmit = handleSubmit((formValues) => {
+      values.value = formValues
+      const dates = Object.values(formValues).map((v) => toDate(v))
       ctx.emit('update:value', isArray(props.value) ? dates : dates[0])
     })
+
+    console.log(dayjs('12-3-2023', 'D-M-YYYY').format(BASE_DATE_FORMAT))
 
     return {
       values,
@@ -72,7 +74,9 @@ export default {
       startValueErrorMessage,
       endValue,
       endValueErrorMessage,
-      onSubmit
+      onSubmit,
+      setValues,
+      setFieldValue
     }
   },
 
@@ -126,16 +130,22 @@ export default {
       handler(value) {
         if (value) {
           if (isArray(this.value)) {
-            this.range = {
-              start: this.value[0],
-              end: this.value[1]
-            }
-            this.activeDate = this.value[1]
+            // o is object of two date string: { start: BASE_DATE_FORMAT, end: BASE_DATE_FORMAT }
+            const o = this.value.reduce((acc, d, i) => {
+              return i > 1
+                ? acc
+                : {
+                    ...acc,
+                    [i <= 0 ? 'start' : 'end']: dayjs(d).format(BASE_DATE_FORMAT)
+                  }
+            }, {})
+            this.values = o
+            this.activeDate = dayjs(o.start, BASE_DATE_FORMAT).toDate()
           } else {
-            this.range = { start: this.value, end: this.value }
+            this.values = { start: this.value, end: this.value }
             this.activeDate = this.value
-            this.submitRanges()
           }
+          this.submitRanges()
           this.focusRangeInput(this.$refs.end).then(() => this.focusRangeEnd())
         } else {
           this.$emit('update:value', isArray(this.value) ? this.value[0] : this.value)
@@ -191,15 +201,12 @@ export default {
       this.activeDate = dayjs(this.activeDate).add(1, 'month').toDate()
     },
     select(date) {
-      date =
-        this.isRangeStartFocused || this.isRangeEndFocused
-          ? format(date, BASE_DATE_FORMAT)
-          : toDate(date)
+      date = format(date, BASE_DATE_FORMAT)
 
       if (this.isRange) {
-        if (isSame(this.range.start, date)) {
+        if (isSame(this.values.start, date)) {
           this.focusRangeStart()
-        } else if (isSame(this.range.end, date)) {
+        } else if (isSame(this.values.end, date)) {
           this.focusRangeEnd()
         } else {
           if (this.isRangeStartFocused) {
@@ -211,14 +218,13 @@ export default {
         }
         this.activeDate = toDate(date)
       } else {
+        this.updateRangeStart(date)
         this.$emit('update:value', toDate(date))
       }
     },
     submitRanges() {
-      this.$emit(
-        'update:value',
-        Object.values(this.range).map((v) => toDate(v))
-      )
+      const dates = Object.values(this.values).map((v) => toDate(v))
+      this.$emit('update:value', dates)
     },
     async focusRangeInput(ref) {
       this.$nextTick(() => {
@@ -234,24 +240,32 @@ export default {
       this.isRangeStartFocused = false
     },
     updateRangeStart(value) {
-      if (isBefore(value, this.activeDate, 'year') || isAfter(value, this.activeDate, 'year')) {
-        const date = setToDate(this.range.end, 'year', toDate(value).getFullYear()).toDate()
+      if (this.isRange) {
+        if (isBefore(value, this.activeDate, 'year') || isAfter(value, this.activeDate, 'year')) {
+          const date = setToDate(this.values.end, 'year', toDate(value).getFullYear()).toDate()
 
-        this.range.start = value
-        this.updateRangeEnd(date)
-      } else if (isAfter(value, this.range.end)) {
-        this.updateRangeEnd(value)
-        this.focusRangeEnd()
+          this.values.start = value
+          this.setFieldValue('start', value)
+          this.updateRangeEnd(date)
+        } else if (isAfter(value, this.values.end)) {
+          this.updateRangeEnd(value)
+          this.focusRangeEnd()
+        } else {
+          this.values.start = value
+          this.setFieldValue('start', value)
+        }
       } else {
-        this.range.start = value
+        this.values.start = value
+        this.setFieldValue('start', value)
       }
     },
     updateRangeEnd(value) {
-      if (isBefore(value, this.range.start)) {
+      if (isBefore(value, this.values.start)) {
         this.updateRangeStart(value)
         this.focusRangeStart()
       } else {
-        this.range.end = value
+        this.values.end = value
+        this.setFieldValue('end', value)
       }
     },
     onKeydown(e) {
@@ -375,13 +389,13 @@ export default {
             'v-calendar__day--today': day.isToday,
             'v-calendar__day--outside': day.isOutside,
             'v-calendar__day--selected': !isRange && isSame(day.Date, value),
-            'v-calendar__day--range-start': isRange && isSame(day.Date, range.start),
-            'v-calendar__day--range': isRange && isBetween(day.Date, range.start, range.end),
-            'v-calendar__day--range-end': isRange && isSame(day.Date, range.end),
+            'v-calendar__day--range-start': isRange && isSame(day.Date, values.start),
+            'v-calendar__day--range': isRange && isBetween(day.Date, values.start, values.end),
+            'v-calendar__day--range-end': isRange && isSame(day.Date, values.end),
             'v-calendar__day--range-start-focused':
-              isRange && isRangeStartFocused && isSame(day.Date, range.start),
+              isRange && isRangeStartFocused && isSame(day.Date, values.start),
             'v-calendar__day--range-end-focused':
-              isRange && isRangeEndFocused && isSame(day.Date, range.end),
+              isRange && isRangeEndFocused && isSame(day.Date, values.end),
             'v-calendar__day--focused': isCalendarFocused && isSame(day.Date, activeDate)
           }"
           @click="select(day.Date)"
