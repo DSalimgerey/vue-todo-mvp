@@ -140,9 +140,12 @@ export default {
                   }
             }, {})
             this.values = o
+            this.setValues(o)
             this.activeDate = dayjs(o.start, BASE_DATE_FORMAT).toDate()
           } else {
-            this.values = { start: this.value, end: this.value }
+            const formattedValue = format(this.value, BASE_DATE_FORMAT)
+            this.values = { start: formattedValue, end: formattedValue }
+            this.setValues({ start: formattedValue, end: formattedValue })
             this.activeDate = this.value
           }
           this.submitRanges()
