@@ -12,12 +12,6 @@ export default {
     return {
       date: new Date()
     }
-  },
-
-  watch: {
-    date(value) {
-      console.log(value)
-    }
   }
 }
 </script>
