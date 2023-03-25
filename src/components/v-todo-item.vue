@@ -26,7 +26,6 @@ export default {
         <p>some test todo title</p>
       </div>
       <div class="flex">
-        <button class="text-[11px]">15 mar</button>
         <v-datepicker v-model="date"></v-datepicker>
       </div>
     </div>
