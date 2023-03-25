@@ -312,17 +312,29 @@ export default {
               startValueErrorMessage
             }}</span>
           </div>
-          <input
-            v-if="isRange"
-            :value="formatDate(range.end)"
-            ref="end"
-            class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none focus:border-sky-600 text-[12px] px-[4px] ring-blue-500/10 focus:ring-2"
-            :class="{ 'border-sky-600 bg-blue-500/5': isRangeEndFocused }"
-            type="text"
-            placeholder="Date"
-            @focus="focusRangeEnd"
-            @keydown.enter="onKeydown"
-          />
+          <div v-if="isRange">
+            <input
+              v-model="endValue"
+              ref="end"
+              class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none text-[12px] px-[4px] focus:ring-2"
+              :class="[
+                {
+                  'border-sky-600 bg-blue-500/5 focus:border-sky-600 ring-blue-500/10':
+                    isRangeEndFocused,
+                  'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
+                    endValueErrorMessage
+                }
+              ]"
+              type="text"
+              placeholder="End date"
+              @focus="focusRangeStart"
+              @blur="onSubmit"
+              @keydown.enter="onSubmit"
+            />
+            <span v-show="endValueErrorMessage" class="text-[12px] text-red-500 mt-[4px]">{{
+              endValueErrorMessage
+            }}</span>
+          </div>
         </div>
       </div>
       <div class="flex items-center justify-between">
