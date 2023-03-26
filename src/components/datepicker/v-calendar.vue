@@ -320,8 +320,14 @@ export default {
   <div class="v-calendar">
     <div class="v-calendar__header">
       <div class="mb-[6px]">
-        <div class="flex">
-          <div class="w-full flex flex-col">
+        <div
+          class="w-[fit-content] grid gap-[4px]"
+          :class="[isRange ? 'grid-cols-2' : 'grid-cols-1']"
+        >
+          <div
+            class="w-[fit-content] flex flex-col"
+            :class="[isRange ? 'w-[fit-content]' : 'w-[168px]']"
+          >
             <input
               v-model="startValue"
               ref="start"
@@ -345,7 +351,7 @@ export default {
               startValueErrorMessage
             }}</span>
           </div>
-          <div v-if="isRange">
+          <div v-if="isRange" class="w-[fit-content] flex flex-col">
             <input
               v-model="endValue"
               ref="end"
