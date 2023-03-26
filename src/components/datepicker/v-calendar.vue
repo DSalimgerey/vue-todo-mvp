@@ -40,6 +40,9 @@ export default {
   emits: ['update:value'],
 
   setup(props, ctx) {
+    const activeDate = ref(new Date())
+    const isRangeStartFocused = ref(false)
+    const isRangeEndFocused = ref(false)
     const values = ref({
       start: format(isArray(props.value) ? props.value[0] : props.value, BASE_DATE_FORMAT),
       end: format(isArray(props.value) ? props.value[1] : props.value, BASE_DATE_FORMAT)
@@ -61,7 +64,29 @@ export default {
     )
 
     const onSubmit = handleSubmit((formValues) => {
-      values.value = formValues
+      if (props.isRange) {
+        if (isRangeStartFocused.value) {
+          const startValue = formValues.start
+          if (
+            isBefore(startValue, activeDate.value, 'year') ||
+            isAfter(startValue, activeDate.value, 'year')
+          ) {
+            const date = setToDate(
+              values.value.end,
+              'year',
+              toDate(startValue).getFullYear()
+            ).format(BASE_DATE_FORMAT)
+            const dateObj = { start: startValue, end: date }
+            values.value = dateObj
+            setValues(dateObj)
+          } else {
+            values.value = formValues
+          }
+        } else {
+          values.value = formValues
+        }
+      }
+
       const dates = Object.values(formValues).map((v) => toDate(v))
       ctx.emit('update:value', isArray(props.value) ? dates : dates[0])
     })
@@ -69,6 +94,9 @@ export default {
     console.log(dayjs('12-3-2023', 'D-M-YYYY').format(BASE_DATE_FORMAT))
 
     return {
+      activeDate,
+      isRangeStartFocused,
+      isRangeEndFocused,
       values,
       startValue,
       startValueErrorMessage,
@@ -81,15 +109,11 @@ export default {
   },
 
   data() {
-    const activeDate = new Date()
     const weekdays = WEEKDAYS
 
     return {
-      activeDate,
       now: new Date(),
       weekdays,
-      isRangeStartFocused: false,
-      isRangeEndFocused: false,
       isCalendarFocused: false
     }
   },
