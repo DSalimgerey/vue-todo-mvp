@@ -130,8 +130,11 @@ export default {
       handler(value) {
         if (value) {
           if (isArray(this.value)) {
-            // o is object of two date string: { start: BASE_DATE_FORMAT, end: BASE_DATE_FORMAT }
+            // o is object with two properties which has as values formatted
+            // date strings : { start: BASE_DATE_FORMAT, end: BASE_DATE_FORMAT }
             const o = this.value.reduce((acc, d, i) => {
+              // if some how props.value has more than two elements, as object property values
+              // should be returned first and second array element and others should be skipped
               return i > 1
                 ? acc
                 : {
