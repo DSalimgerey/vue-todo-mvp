@@ -451,7 +451,7 @@ export default {
   @apply !bg-blue-500/10 !rounded-[0px];
 }
 .v-calendar__day--today {
-  @apply !border-gray-400 !rounded-[2px] !font-bold;
+  @apply !font-bold !text-sky-600;
 }
 .v-calendar__day--focused {
   @apply border-sky-600 rounded-[2px] ring ring-[2px] ring-sky-600/10 !bg-sky-600/10;
