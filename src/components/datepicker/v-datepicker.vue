@@ -1,5 +1,5 @@
 <script>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { usePopper } from '../../composables/use-popper'
 import { isArray } from '../../utils'
@@ -33,7 +33,14 @@ export default {
   },
 
   setup(props, ctx) {
-    const date = ref(props.modelValue)
+    const date = computed({
+      get() {
+        return props.modelValue
+      },
+      set(value) {
+        ctx.emit('update:modelValue', value)
+      }
+    })
     const reference = ref(null)
     const popper = ref(null)
     const { isOpen, open, close } = usePopper(reference, popper, {
@@ -45,8 +52,6 @@ export default {
     }
 
     onClickOutside(popper, close)
-
-    watch(date, (value) => ctx.emit('update:modelValue', value))
 
     return {
       isOpen,
