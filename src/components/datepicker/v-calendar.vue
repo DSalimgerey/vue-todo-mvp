@@ -253,13 +253,9 @@ export default {
     },
     updateRangeStart(value) {
       if (this.isRange) {
-        if (isBefore(value, this.activeDate, 'year') || isAfter(value, this.activeDate, 'year')) {
-          const date = setToDate(this.values.end, 'year', toDate(value).getFullYear()).toDate()
-
-          this.values.start = value
-          this.setFieldValue('start', value)
-          this.updateRangeEnd(date)
-        } else if (isAfter(value, this.values.end)) {
+        if (isAfter(value, this.values.end)) {
+          // todo: in this moment current value of first input should be replaced by
+          // current value of second input after 'value' should be passed into 'updateRangeEnd'
           this.updateRangeEnd(value)
           this.focusRangeEnd()
         } else {
