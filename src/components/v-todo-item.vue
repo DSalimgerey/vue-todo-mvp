@@ -1,5 +1,4 @@
 <script>
-// import dayjs from 'dayjs'
 import VDatepicker from './datepicker/v-datepicker.vue'
 
 export default {
@@ -7,10 +6,20 @@ export default {
     VDatepicker
   },
 
+  props: ['todo'],
+  emits: ['updateDate'],
+
   data() {
-    // const floatingStarValue = dayjs(new Date()).subtract(2, 'day').toDate()
+    const date = this.todo.dueDate
     return {
-      date: new Date()
+      date
+    }
+  },
+
+  watch: {
+    date(value) {
+      console.log(value)
+      this.$emit('updateDate', { value, id: this.todo.id })
     }
   }
 }
@@ -23,7 +32,7 @@ export default {
     ></button>
     <div>
       <div>
-        <p>some test todo title</p>
+        <p>{{ todo.title }}</p>
       </div>
       <div class="flex">
         <v-datepicker v-model="date"></v-datepicker>
