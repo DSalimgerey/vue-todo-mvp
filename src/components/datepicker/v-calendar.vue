@@ -83,14 +83,14 @@ export default {
             isBefore(startValue, activeDate.value, 'year') ||
             isAfter(startValue, activeDate.value, 'year')
           ) {
-            const date = setToDate(
+            const updatedEndValue = setToDate(
               values.value.end,
               'year',
               toDate(startValue).getFullYear()
             ).format(BASE_DATE_FORMAT)
-            const dateObj = { start: startValue, end: date }
-            values.value = dateObj
-            setValues(dateObj)
+            const updatedValues = { start: startValue, end: updatedEndValue }
+            values.value = updatedValues
+            setValues(updatedValues)
           } else {
             values.value = formValues
           }
