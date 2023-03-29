@@ -88,6 +88,13 @@ export default {
     )
 
     const onSubmit = handleSubmit((formValues) => {
+      if (
+        isSame(startValue.value, values.value.start) &&
+        isSame(endValue.value, values.value.end)
+      ) {
+        return
+      }
+
       if (props.isRange) {
         if (isRangeStartFocused.value) {
           const startValue = formValues.start
