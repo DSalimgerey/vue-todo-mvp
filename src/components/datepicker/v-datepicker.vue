@@ -76,7 +76,7 @@ export default {
 </script>
 
 <template>
-  <div ref="reference" @click="toggle">
+  <div ref="reference" class="flex" @click="toggle">
     <button class="text-[12px]">{{ displayDate }}</button>
   </div>
   <teleport v-if="isOpen" to="body">

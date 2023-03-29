@@ -28,7 +28,7 @@ watch(
   <main>
     <div class="container mx-auto w-[600px]">
       <div class="py-[30px]">
-        <div class="mb-[20px]">
+        <div class="mb-[6px]">
           <h1 class="text-[16px] font-bold">Today</h1>
         </div>
 
