@@ -1,20 +1,28 @@
 <script>
 import { ref } from 'vue'
 import dayjs from 'dayjs'
-import customParseFormatPlugin from 'dayjs/plugin/customParseFormat'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
 import { DAYS_AMOUNT_OF_CALENDAR, WEEKDAYS, BASE_DATE_FORMAT } from '../../utils/constants'
-import { isSame, format, toDate, isBetween, isAfter, isBefore, setToDate } from './utils'
-import { focus, stopEvent, isArray } from '../../utils'
-
-dayjs.extend(customParseFormatPlugin)
+import {
+  focus,
+  stopEvent,
+  isArray,
+  isSame,
+  format,
+  toDate,
+  isBetween,
+  isAfter,
+  isBefore,
+  setToDate,
+  isValid
+} from '../../utils'
 
 const validator = (name, message, format = BASE_DATE_FORMAT) => {
   return yup.string().test(name, message, function (value) {
     const { path, createError } = this
-    return dayjs(value, format, true).isValid() || createError({ path, message })
+    return isValid(value, format, true) || createError({ path, message })
   })
 }
 
@@ -31,8 +39,8 @@ export default {
       required: true,
       validation: (value) =>
         Array.isArray(value)
-          ? value.every((v) => dayjs(v, BASE_DATE_FORMAT, true).isValid())
-          : dayjs(value, BASE_DATE_FORMAT, true).isValid()
+          ? value.every((v) => isValid(v, BASE_DATE_FORMAT))
+          : isValid(value, BASE_DATE_FORMAT)
     },
     isRange: {
       type: Boolean,
@@ -94,8 +102,6 @@ export default {
       const dates = Object.values(formValues)
       ctx.emit('update:value', isArray(props.value) ? dates : dates[0])
     })
-
-    console.log(dayjs('12-3-2023', 'D-M-YYYY').format(BASE_DATE_FORMAT))
 
     return {
       activeDate,

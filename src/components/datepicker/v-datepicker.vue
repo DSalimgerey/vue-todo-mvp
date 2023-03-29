@@ -1,15 +1,10 @@
 <script>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { usePopper } from '../../composables/use-popper'
-import { isArray } from '../../utils'
-import { format } from './utils'
+import { isArray, format, isValid } from '../../utils'
 import VCalendar from './v-calendar.vue'
 import { BASE_DATE_FORMAT } from '../../utils/constants'
-import dayjs from 'dayjs'
-import customParseFormatPlugin from 'dayjs/plugin/customParseFormat'
-
-dayjs.extend(customParseFormatPlugin)
 
 export default {
   name: 'v-datepicker',
@@ -23,8 +18,8 @@ export default {
       required: true,
       validation: (value) =>
         Array.isArray(value)
-          ? value.every((v) => dayjs(v, BASE_DATE_FORMAT, true).isValid())
-          : dayjs(value, BASE_DATE_FORMAT, true).isValid()
+          ? value.every((v) => isValid(v, BASE_DATE_FORMAT))
+          : isValid(value, BASE_DATE_FORMAT)
     }
   },
 
