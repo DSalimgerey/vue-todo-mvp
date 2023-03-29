@@ -3,9 +3,13 @@ import { computed, ref, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { usePopper } from '../../composables/use-popper'
 import { isArray } from '../../utils'
-import { format, isDate, isValidRange } from './utils'
+import { format } from './utils'
 import VCalendar from './v-calendar.vue'
 import { BASE_DATE_FORMAT } from '../../utils/constants'
+import dayjs from 'dayjs'
+import customParseFormatPlugin from 'dayjs/plugin/customParseFormat'
+
+dayjs.extend(customParseFormatPlugin)
 
 export default {
   name: 'v-datepicker',
@@ -15,19 +19,17 @@ export default {
 
   props: {
     modelValue: {
-      type: [Date, Array],
-      required: true
+      type: [String, Array],
+      required: true,
+      validation: (value) =>
+        Array.isArray(value)
+          ? value.every((v) => dayjs(v, BASE_DATE_FORMAT, true).isValid())
+          : dayjs(value, BASE_DATE_FORMAT, true).isValid()
     }
   },
 
   emits: {
-    ['update:modelValue'](payload) {
-      if (isValidRange(payload) || isDate(payload)) {
-        return true
-      } else {
-        return false
-      }
-    },
+    ['update:modelValue']: null,
     open: null,
     close: null
   },

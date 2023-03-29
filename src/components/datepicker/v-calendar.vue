@@ -27,8 +27,12 @@ export default {
 
   props: {
     value: {
-      type: [Date, Array],
-      required: true
+      type: [String, Array],
+      required: true,
+      validation: (value) =>
+        Array.isArray(value)
+          ? value.every((v) => dayjs(v, BASE_DATE_FORMAT, true).isValid())
+          : dayjs(value, BASE_DATE_FORMAT, true).isValid()
     },
     isRange: {
       type: Boolean,
@@ -44,8 +48,8 @@ export default {
     const isRangeStartFocused = ref(false)
     const isRangeEndFocused = ref(false)
     const values = ref({
-      start: format(isArray(props.value) ? props.value[0] : props.value, BASE_DATE_FORMAT),
-      end: format(isArray(props.value) ? props.value[1] : props.value, BASE_DATE_FORMAT)
+      start: isArray(props.value) ? props.value[0] : props.value,
+      end: isArray(props.value) ? props.value[1] : props.value
     })
 
     const incorrectDateErrorMessage = props.isRange ? 'invalid range' : 'invalid date'
@@ -87,7 +91,7 @@ export default {
         }
       }
 
-      const dates = Object.values(formValues).map((v) => toDate(v))
+      const dates = Object.values(formValues)
       ctx.emit('update:value', isArray(props.value) ? dates : dates[0])
     })
 
@@ -249,11 +253,11 @@ export default {
         this.activeDate = toDate(date)
       } else {
         this.updateRangeStart(date)
-        this.$emit('update:value', toDate(date))
+        this.$emit('update:value', date)
       }
     },
     submitRanges() {
-      const dates = Object.values(this.values).map((v) => toDate(v))
+      const dates = Object.values(this.values)
       this.$emit('update:value', dates)
     },
     async focusRangeInput(ref) {
