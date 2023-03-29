@@ -4,7 +4,16 @@ import dayjs from 'dayjs'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
-import { DAYS_AMOUNT_OF_CALENDAR, WEEKDAYS, BASE_DATE_FORMAT } from '../../utils/constants'
+import {
+  DAYS_AMOUNT_OF_CALENDAR,
+  WEEKDAYS,
+  BASE_DATE_FORMAT,
+  ARROW_UP,
+  ARROW_RIGHT,
+  ARROW_DOWN,
+  ARROW_LEFT,
+  ENTER
+} from '../../utils/constants'
 import {
   focus,
   stopEvent,
@@ -190,39 +199,19 @@ export default {
         } else {
           this.$emit('update:value', isArray(this.value) ? this.value[0] : this.value)
         }
-      },
-      immediate: true
+      }
     }
   },
 
   mounted() {
     this.focusRangeInput(this.$refs.start).then(() => this.focusRangeStart())
     document.addEventListener('click', this.focusCalendar)
-    document.addEventListener('keydown', (e) => {
-      if (this.isCalendarFocused) {
-        switch (e.code) {
-          case 'ArrowUp':
-            this.activeDate = dayjs(this.activeDate).subtract(7, 'day').toDate()
-            break
-          case 'ArrowRight':
-            this.activeDate = dayjs(this.activeDate).add(1, 'day').toDate()
-            break
-          case 'ArrowDown':
-            this.activeDate = dayjs(this.activeDate).add(7, 'day').toDate()
-            break
-          case 'ArrowLeft':
-            this.activeDate = dayjs(this.activeDate).subtract(1, 'day').toDate()
-            break
-          case 'Enter':
-            stopEvent(e)
-            this.select(this.activeDate)
-        }
-      }
-    })
+    document.addEventListener('keydown', this.onKeydown)
   },
 
   beforeUnmount() {
     document.removeEventListener('click', this.focusCalendar)
+    document.removeEventListener('keydown', this.onKeydown)
   },
 
   methods: {
@@ -311,29 +300,49 @@ export default {
       }
     },
     onKeydown(e) {
-      const value = e.target.value
-
-      // so that when you enter and change the start date, the number of days between
-      // the start and end of the range remains the same
-      // for example, the next date is selected as the value of the range - 12 / 15
-      // (there are two days between the two ends of the range: 13 and 14), if the start is changed to 14,
-      // the number of intermediate days will remain (2 days), and the end will shift by 17 (from 15)
-
-      if (this.$refs.start === e.target) {
-        const diff = Math.abs(dayjs(value).diff(this.range.start, 'day'))
-        const addOrSubtract = isBefore(value, this.range.start) ? 'subtract' : 'add'
-
-        const updatedRangeEndDateWithDiff = dayjs(this.range.end)
-          [addOrSubtract](diff, 'day')
-          .format(BASE_DATE_FORMAT)
-
-        this.range.start = value
-        this.range.end = updatedRangeEndDateWithDiff
-      } else {
-        this.isRangeStartFocused ? this.updateRangeStart(value) : this.updateRangeEnd(value)
+      if (this.isCalendarFocused) {
+        switch (e.code) {
+          case ARROW_UP:
+            this.activeDate = dayjs(this.activeDate).subtract(7, 'day').toDate()
+            break
+          case ARROW_RIGHT:
+            this.activeDate = dayjs(this.activeDate).add(1, 'day').toDate()
+            break
+          case ARROW_DOWN:
+            this.activeDate = dayjs(this.activeDate).add(7, 'day').toDate()
+            break
+          case ARROW_LEFT:
+            this.activeDate = dayjs(this.activeDate).subtract(1, 'day').toDate()
+            break
+          case ENTER:
+            stopEvent(e)
+            this.select(this.activeDate)
+        }
       }
 
-      this.submitRanges()
+      // const value = e.target.value
+
+      // // so that when you enter and change the start date, the number of days between
+      // // the start and end of the range remains the same
+      // // for example, the next date is selected as the value of the range - 12 / 15
+      // // (there are two days between the two ends of the range: 13 and 14), if the start is changed to 14,
+      // // the number of intermediate days will remain (2 days), and the end will shift by 17 (from 15)
+
+      // if (this.$refs.start === e.target) {
+      //   const diff = Math.abs(dayjs(value).diff(this.range.start, 'day'))
+      //   const addOrSubtract = isBefore(value, this.range.start) ? 'subtract' : 'add'
+
+      //   const updatedRangeEndDateWithDiff = dayjs(this.range.end)
+      //     [addOrSubtract](diff, 'day')
+      //     .format(BASE_DATE_FORMAT)
+
+      //   this.range.start = value
+      //   this.range.end = updatedRangeEndDateWithDiff
+      // } else {
+      //   this.isRangeStartFocused ? this.updateRangeStart(value) : this.updateRangeEnd(value)
+      // }
+
+      // this.submitRanges()
     },
     focusCalendar(e) {
       if (e.target.hasAttribute('data-date')) {
