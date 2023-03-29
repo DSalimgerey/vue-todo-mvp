@@ -1,8 +1,9 @@
 import { unref } from 'vue'
 import dayjs from 'dayjs'
 import isBetweenPlugin from 'dayjs/plugin/isBetween'
-
-dayjs.extend(isBetweenPlugin)
+import customParseFormatPlugin from 'dayjs/plugin/customParseFormat'
+import { BASE_DATE_FORMAT } from './constants'
+;[isBetweenPlugin, customParseFormatPlugin].forEach((plg) => dayjs.extend(plg))
 
 export const isArray = (value) => Array.isArray(value)
 
@@ -68,3 +69,12 @@ export const isAfter = (d1, d2, unit = 'date') => dayjs(d1).isAfter(d2, unit)
  * @param {number} value
  */
 export const setToDate = (date, unit, value) => dayjs(date).set(unit, value)
+
+/**
+ *
+ * @param {dayjs.ConfigType} date
+ * @param {string} [format=BASE_DATE_FORMAT] - as default value is used 'M-D-YYYY'
+ * @param {boolean} [strict=true]
+ */
+export const isValid = (date, format = BASE_DATE_FORMAT, strict = true) =>
+  dayjs(date, format, strict).isValid()
