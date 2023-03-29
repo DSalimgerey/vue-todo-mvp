@@ -1,6 +1,7 @@
 <script>
 import { ref } from 'vue'
 import dayjs from 'dayjs'
+import isTodayPlugin from 'dayjs/plugin/isToday'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
@@ -27,6 +28,8 @@ import {
   setToDate,
   isValid
 } from '../../utils'
+
+dayjs.extend(isTodayPlugin)
 
 const validator = (name, message, format = BASE_DATE_FORMAT) => {
   return yup.string().test(name, message, function (value) {
@@ -152,7 +155,7 @@ export default {
           date: dayjs(this.startDate).add(i, 'day').format('D'),
           month: dayjs(this.startDate).add(i, 'day').format('M'),
           year: dayjs(this.startDate).add(i, 'day').format('YYYY'),
-          isToday: isSame(dayjs(this.startDate).add(i, 'day'), this.now),
+          isToday: dayjs(this.startDate).add(i, 'day').isToday(),
           isOutside: !isSame(dayjs(this.startDate).add(i, 'day'), this.activeDate, 'month'),
           Date: dayjs(this.startDate).add(i, 'day').toDate()
         })
