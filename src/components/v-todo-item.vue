@@ -18,7 +18,6 @@ export default {
 
   watch: {
     date(value) {
-      console.log(value)
       this.$emit('updateDate', { value, id: this.todo.id })
     }
   }
