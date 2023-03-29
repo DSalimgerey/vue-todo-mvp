@@ -111,7 +111,24 @@ export default {
             values.value = updatedValues
             setValues(updatedValues)
           } else {
-            values.value = formValues
+            // So that when user enter and change the start date, the number of days between
+            // the start and end of the range remains the same. For example, the next date
+            // is selected as the value of the range - 12 / 15 (there are two days between
+            // the two ends of the range: 13 and 14), if the start is changed to 14,
+            // the number of intermediate days will remain (2 days), and the end will shift by 17 (from 15)
+            // and vice versa, when start date is changed from 12 to 10 or 9. End date should be
+            // shifted from 15 to 13 or 12
+
+            const diff = Math.abs(dayjs(startValue).diff(values.value.start, 'day'))
+            const addOrSubtract = isBefore(startValue, values.value.start) ? 'subtract' : 'add'
+
+            const updatedEndDateWithDiff = dayjs(values.value.end)
+              [addOrSubtract](diff, 'day')
+              .format(BASE_DATE_FORMAT)
+
+            const updatedValues = { start: startValue, end: updatedEndDateWithDiff }
+            values.value = updatedValues
+            setValues(updatedValues)
           }
         } else {
           values.value = formValues
@@ -329,30 +346,6 @@ export default {
             this.select(this.activeDate)
         }
       }
-
-      // const value = e.target.value
-
-      // // so that when you enter and change the start date, the number of days between
-      // // the start and end of the range remains the same
-      // // for example, the next date is selected as the value of the range - 12 / 15
-      // // (there are two days between the two ends of the range: 13 and 14), if the start is changed to 14,
-      // // the number of intermediate days will remain (2 days), and the end will shift by 17 (from 15)
-
-      // if (this.$refs.start === e.target) {
-      //   const diff = Math.abs(dayjs(value).diff(this.range.start, 'day'))
-      //   const addOrSubtract = isBefore(value, this.range.start) ? 'subtract' : 'add'
-
-      //   const updatedRangeEndDateWithDiff = dayjs(this.range.end)
-      //     [addOrSubtract](diff, 'day')
-      //     .format(BASE_DATE_FORMAT)
-
-      //   this.range.start = value
-      //   this.range.end = updatedRangeEndDateWithDiff
-      // } else {
-      //   this.isRangeStartFocused ? this.updateRangeStart(value) : this.updateRangeEnd(value)
-      // }
-
-      // this.submitRanges()
     },
     focusCalendar(e) {
       if (e.target.hasAttribute('data-date')) {
