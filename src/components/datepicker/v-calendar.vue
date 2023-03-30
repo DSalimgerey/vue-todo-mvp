@@ -129,14 +129,15 @@ export default {
             const updatedValues = { start: startValue, end: updatedEndDateWithDiff }
             values.value = updatedValues
             setValues(updatedValues)
+            ctx.emit('update:value', Object.values(values.value))
           }
         } else {
           values.value = formValues
+          ctx.emit('update:value', Object.values(formValues))
         }
+      } else {
+        ctx.emit('update:value', formValues.start)
       }
-
-      const dates = Object.values(formValues)
-      ctx.emit('update:value', isArray(props.value) ? dates : dates[0])
     })
 
     return {
