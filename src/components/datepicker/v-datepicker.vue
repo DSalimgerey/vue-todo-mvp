@@ -26,7 +26,7 @@ export default {
       type: [String, Array],
       required: true,
       validation: (value) =>
-        Array.isArray(value)
+        isArray(value)
           ? value.every((v) => isValid(v, BASE_DATE_FORMAT))
           : isValid(value, BASE_DATE_FORMAT)
     }
@@ -69,8 +69,8 @@ export default {
   },
 
   data() {
-    const isRange = Array.isArray(this.date)
-    const isTime = Array.isArray(this.date)
+    const isRange = isArray(this.date)
+    const isTime = isArray(this.date)
       ? this.date.some((d) => d.includes(':'))
       : this.date.includes(':')
     return {
@@ -80,18 +80,31 @@ export default {
   },
 
   computed: {
+    computedBaseFormats() {
+      return isArray(this.modelValue)
+        ? this.modelValue.some((d) => d.includes(':'))
+          ? BASE_DATE_FORMAT_WITH_TIME
+          : BASE_DATE_FORMAT
+        : this.modelValue.includes(':')
+        ? BASE_DATE_FORMAT_WITH_TIME
+        : BASE_DATE_FORMAT
+    },
     displayDate() {
       return isArray(this.modelValue)
         ? this.modelValue
             .map((d) =>
-              d.includes(':')
-                ? dayjs(d, BASE_DATE_FORMAT_WITH_TIME).format(DISPLAY_DATE_FORMAT_WITH_TIME)
-                : dayjs(d, BASE_DATE_FORMAT).format(DISPLAY_DATE_FORMAT)
+              dayjs(d, this.computedBaseFormats).format(this.conditionalDisplayFormats(d))
             )
             .join(' -- ')
-        : this.modelValue.includes(':')
-        ? dayjs(this.modelValue, BASE_DATE_FORMAT_WITH_TIME).format(DISPLAY_DATE_FORMAT_WITH_TIME)
-        : dayjs(this.modelValue, BASE_DATE_FORMAT).format(DISPLAY_DATE_FORMAT)
+        : dayjs(this.modelValue, this.computedBaseFormats).format(
+            this.conditionalDisplayFormats(this.modelValue)
+          )
+    }
+  },
+
+  methods: {
+    conditionalDisplayFormats(value) {
+      return value.includes(':') ? DISPLAY_DATE_FORMAT_WITH_TIME : DISPLAY_DATE_FORMAT
     }
   }
 }
