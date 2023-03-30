@@ -10,7 +10,7 @@ export default {
   emits: ['updateDate'],
 
   data() {
-    const date = this.todo.dueDate
+    const date = this.todo.dueDate.value
     return {
       date
     }
