@@ -110,6 +110,7 @@ export default {
             const updatedValues = { start: startValue, end: updatedEndValue }
             values.value = updatedValues
             setValues(updatedValues)
+            ctx.emit('update:value', Object.values(values.value))
           } else {
             // So that when user enter and change the start date, the number of days between
             // the start and end of the range remains the same. For example, the next date
@@ -305,8 +306,6 @@ export default {
     updateRangeStart(value) {
       if (this.isRange) {
         if (isAfter(value, this.values.end)) {
-          // todo: in this moment current value of first input should be replaced by
-          // current value of second input after 'value' should be passed into 'updateRangeEnd'
           this.values.start = this.values.end
           this.setFieldValue('start', this.values.end)
           this.updateRangeEnd(value)
