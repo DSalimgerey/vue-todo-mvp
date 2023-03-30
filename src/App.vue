@@ -6,14 +6,23 @@ const todos = ref([
   {
     id: '1213',
     title: 'test',
-    dueDate: '4-12-2023'
+    dueDate: {
+      value: ['4-12-2023 12:24', '4-14-2023 13:24']
+    }
+  },
+  {
+    id: '1214',
+    title: 'test',
+    dueDate: {
+      value: '4-12-2023'
+    }
   }
 ])
 
 const updateDueDate = ({ value, id }) => {
   const idx = todos.value.findIndex((t) => t.id === id)
   const todo = todos.value[idx]
-  const updatedTodo = Object.assign(todo, { dueDate: value })
+  const updatedTodo = Object.assign(todo, { dueDate: { value: value } })
   todos.value.splice(idx, 1, updatedTodo)
 }
 
