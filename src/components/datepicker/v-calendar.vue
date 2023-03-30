@@ -58,6 +58,11 @@ export default {
       type: Boolean,
       required: false,
       default: false
+    },
+    isTime: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
 
