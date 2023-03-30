@@ -5,7 +5,7 @@ import customParseFormatPlugin from 'dayjs/plugin/customParseFormat'
 import { BASE_DATE_FORMAT } from './constants'
 ;[isBetweenPlugin, customParseFormatPlugin].forEach((plg) => dayjs.extend(plg))
 
-export const isArray = (value) => Array.isArray(value)
+export const isArray = (value) => Array.isArray(unref(value))
 
 export const focus = (el) => unref(el)?.focus()
 
