@@ -61,7 +61,8 @@ export default {
 
   data() {
     return {
-      isRange: false
+      isRange: false,
+      isTimeOn: false
     }
   },
 
@@ -88,6 +89,10 @@ export default {
         <div class="w-full flex items-center justify-between">
           <span>End date</span>
           <input v-model="isRange" type="checkbox" />
+        </div>
+        <div class="w-full flex items-center justify-between mt-[2px]">
+          <span>Include time</span>
+          <input v-model="isTimeOn" type="checkbox" />
         </div>
       </div>
     </div>
