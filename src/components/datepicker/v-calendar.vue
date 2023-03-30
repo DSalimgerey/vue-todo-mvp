@@ -307,6 +307,8 @@ export default {
         if (isAfter(value, this.values.end)) {
           // todo: in this moment current value of first input should be replaced by
           // current value of second input after 'value' should be passed into 'updateRangeEnd'
+          this.values.start = this.values.end
+          this.setFieldValue('start', this.values.end)
           this.updateRangeEnd(value)
           this.focusRangeEnd()
         } else {
