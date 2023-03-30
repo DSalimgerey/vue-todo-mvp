@@ -2,9 +2,18 @@
 import { computed, ref } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { usePopper } from '../../composables/use-popper'
-import { isArray, format, isValid } from '../../utils'
+import { isArray, isValid } from '../../utils'
 import VCalendar from './v-calendar.vue'
-import { BASE_DATE_FORMAT } from '../../utils/constants'
+import {
+  BASE_DATE_FORMAT,
+  BASE_DATE_FORMAT_WITH_TIME,
+  DISPLAY_DATE_FORMAT,
+  DISPLAY_DATE_FORMAT_WITH_TIME
+} from '../../utils/constants'
+import dayjs from 'dayjs'
+import customParseFormatPlugin from 'dayjs/plugin/customParseFormat'
+
+dayjs.extend(customParseFormatPlugin)
 
 export default {
   name: 'v-datepicker',
@@ -60,17 +69,29 @@ export default {
   },
 
   data() {
+    const isRange = Array.isArray(this.date)
+    const isTime = Array.isArray(this.date)
+      ? this.date.some((d) => d.includes(':'))
+      : this.date.includes(':')
     return {
-      isRange: false,
-      isTimeOn: false
+      isRange,
+      isTime
     }
   },
 
   computed: {
     displayDate() {
       return isArray(this.modelValue)
-        ? this.modelValue.map((d) => format(d, BASE_DATE_FORMAT)).join(' -- ')
-        : format(this.modelValue, BASE_DATE_FORMAT)
+        ? this.modelValue
+            .map((d) =>
+              d.includes(':')
+                ? dayjs(d, BASE_DATE_FORMAT_WITH_TIME).format(DISPLAY_DATE_FORMAT_WITH_TIME)
+                : dayjs(d, BASE_DATE_FORMAT).format(DISPLAY_DATE_FORMAT)
+            )
+            .join(' -- ')
+        : this.modelValue.includes(':')
+        ? dayjs(this.modelValue, BASE_DATE_FORMAT_WITH_TIME).format(DISPLAY_DATE_FORMAT_WITH_TIME)
+        : dayjs(this.modelValue, BASE_DATE_FORMAT).format(DISPLAY_DATE_FORMAT)
     }
   }
 }
@@ -78,11 +99,11 @@ export default {
 
 <template>
   <div ref="reference" class="flex" @click="toggle">
-    <button class="text-[12px]">{{ displayDate }}</button>
+    <button class="text-[11px]">{{ displayDate }}</button>
   </div>
   <teleport v-if="isOpen" to="body">
     <div ref="popper" class="bg-white">
-      <v-calendar v-model:value="date" :is-range="isRange"></v-calendar>
+      <v-calendar v-model:value="date" :is-range="isRange" :is-time="isTime"></v-calendar>
 
       <!-- settings -->
       <div class="mt-[8px]">
@@ -92,7 +113,7 @@ export default {
         </div>
         <div class="w-full flex items-center justify-between mt-[2px]">
           <span>Include time</span>
-          <input v-model="isTimeOn" type="checkbox" />
+          <input v-model="isTime" type="checkbox" />
         </div>
       </div>
     </div>
