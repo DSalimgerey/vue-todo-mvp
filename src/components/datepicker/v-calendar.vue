@@ -50,7 +50,7 @@ export default {
       type: [String, Array],
       required: true,
       validation: (value) =>
-        Array.isArray(value)
+        isArray(value)
           ? value.every((v) => isValid(v, BASE_DATE_FORMAT))
           : isValid(value, BASE_DATE_FORMAT)
     },
@@ -72,9 +72,14 @@ export default {
     const activeDate = ref(new Date())
     const isRangeStartFocused = ref(false)
     const isRangeEndFocused = ref(false)
+
+    const splittedDate = isArray(props.value)
+      ? props.value.map((d) => d.split(' ')[0])
+      : props.value.split(' ')[0]
+
     const values = ref({
-      start: isArray(props.value) ? props.value[0] : props.value,
-      end: isArray(props.value) ? props.value[1] : props.value
+      start: isArray(props.value) ? splittedDate[0] : splittedDate,
+      end: isArray(props.value) ? splittedDate[1] : splittedDate
     })
 
     const incorrectDateErrorMessage = props.isRange ? 'invalid range' : 'invalid date'
