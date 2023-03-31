@@ -50,6 +50,7 @@ export default {
     const reference = ref(null)
     const popper = ref(null)
     const { isOpen, open, close } = usePopper(reference, popper, {
+      placement: 'bottom-start',
       emit: ctx.emit
     })
 
