@@ -376,54 +376,100 @@ export default {
       <div class="mb-[6px]">
         <div
           class="w-[fit-content] grid gap-[4px]"
-          :class="[isRange ? 'grid-cols-2' : 'grid-cols-1']"
+          :class="[
+            isRange
+              ? isTime
+                ? 'grid-rows-2 grid-cols-1'
+                : 'grid-rows-1 grid-cols-2'
+              : 'grid-rows-1 grid-cols-1'
+          ]"
         >
+          <!-- start range input -->
           <div
             class="w-[fit-content] flex flex-col"
             :class="[isRange ? 'w-[fit-content]' : 'w-[168px]']"
           >
-            <input
-              v-model="startValue"
-              ref="start"
-              class="h-[22px] border border-gray-400 rounded-[4px] focus:outline-none text-[12px] px-[4px] focus:ring-2"
+            <div
+              class="h-[22px] flex items-center border rounded-[3px]"
               :class="[
-                isRange ? 'w-[82px]' : 'w-full',
-                {
-                  'border-sky-600 bg-blue-500/5 focus:border-sky-600 ring-blue-500/10':
-                    isRangeStartFocused,
-                  'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
-                    startValueErrorMessage
-                }
+                isRange && isRangeStartFocused
+                  ? 'border-sky-600 bg-blue-500/5 ring-blue-500/10 focus-within:ring-2'
+                  : 'bg-gray-50 border-gray-400'
               ]"
-              type="text"
-              :placeholder="isRange ? 'Start date' : 'Date'"
-              @focus="focusRangeStart"
-              @blur="onSubmit"
-              @keydown.enter="onSubmit"
-            />
+            >
+              <input
+                v-model="startValue"
+                ref="start"
+                class="bg-[transparent] focus:outline-none text-[12px] px-[4px]"
+                :class="[
+                  isRange || isTime ? 'w-[82px]' : 'w-full',
+                  {
+                    'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
+                      startValueErrorMessage
+                  }
+                ]"
+                type="text"
+                :placeholder="isRange ? 'Start date' : 'Date'"
+                @focus="focusRangeStart"
+                @blur="onSubmit"
+                @keydown.enter="onSubmit"
+              />
+              <div v-if="isTime" class="flex w-[1px] h-[14px] bg-gray-400 mr-[4px]"></div>
+              <input
+                v-if="isTime"
+                :value="'12:24'"
+                class="w-[82px] bg-[transparent] focus:outline-none text-[12px] px-[4px]"
+                type="text"
+                @focus="focusRangeStart"
+              />
+            </div>
+
             <span v-show="startValueErrorMessage" class="text-[12px] text-red-500 mt-[4px]">{{
               startValueErrorMessage
             }}</span>
           </div>
-          <div v-if="isRange" class="w-[fit-content] flex flex-col">
-            <input
-              v-model="endValue"
-              ref="end"
-              class="w-[82px] h-[22px] border border-gray-400 rounded-[4px] focus:outline-none text-[12px] px-[4px] focus:ring-2"
+
+          <!-- end range input -->
+          <div
+            v-if="isRange"
+            class="w-[fit-content] flex flex-col"
+            :class="[isRange ? 'w-[fit-content]' : 'w-[168px]']"
+          >
+            <div
+              class="h-[22px] flex items-center border rounded-[3px]"
               :class="[
-                {
-                  'border-sky-600 bg-blue-500/5 focus:border-sky-600 ring-blue-500/10':
-                    isRangeEndFocused,
-                  'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
-                    endValueErrorMessage
-                }
+                isRange && isRangeEndFocused
+                  ? 'border-sky-600 bg-blue-500/5 ring-blue-500/10 focus-within:ring-2'
+                  : 'bg-gray-50 border-gray-400'
               ]"
-              type="text"
-              placeholder="End date"
-              @focus="focusRangeEnd"
-              @blur="onSubmit"
-              @keydown.enter="onSubmit"
-            />
+            >
+              <input
+                v-model="endValue"
+                ref="end"
+                class="bg-[transparent] focus:outline-none text-[12px] px-[4px]"
+                :class="[
+                  isRange || isTime ? 'w-[82px]' : 'w-full',
+                  {
+                    'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
+                      endValueErrorMessage
+                  }
+                ]"
+                type="text"
+                placeholder="'End date'"
+                @focus="focusRangeEnd"
+                @blur="onSubmit"
+                @keydown.enter="onSubmit"
+              />
+              <div v-if="isTime" class="flex w-[1px] h-[14px] bg-gray-400 mr-[4px]"></div>
+              <input
+                v-if="isTime"
+                :value="'12:24'"
+                class="w-[82px] bg-[transparent] focus:outline-none text-[12px] px-[4px]"
+                type="text"
+                @focus="focusRangeEnd"
+              />
+            </div>
+
             <span v-show="endValueErrorMessage" class="text-[12px] text-red-500 mt-[4px]">{{
               endValueErrorMessage
             }}</span>
