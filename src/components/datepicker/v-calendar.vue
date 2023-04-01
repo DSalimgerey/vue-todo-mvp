@@ -1,5 +1,5 @@
 <script>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import dayjs from 'dayjs'
 import isTodayPlugin from 'dayjs/plugin/isToday'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
@@ -13,7 +13,9 @@ import {
   ARROW_RIGHT,
   ARROW_DOWN,
   ARROW_LEFT,
-  ENTER
+  ENTER,
+  HHMM,
+  DEFAULT_TIME
 } from '../../utils/constants'
 import {
   focus,
@@ -26,10 +28,53 @@ import {
   isAfter,
   isBefore,
   setToDate,
-  isValid
+  isValid,
+  values
 } from '../../utils'
 
 dayjs.extend(isTodayPlugin)
+
+function factory(date1, date2, time1 = DEFAULT_TIME, time2 = DEFAULT_TIME) {
+  return {
+    start: {
+      date: date1,
+      time: time1
+    },
+    end: {
+      date: date2,
+      time: time2
+    }
+  }
+}
+
+function dateTimeSplitter(value) {
+  const dates = []
+  const times = []
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      if (value[i].includes(':')) {
+        times.push(value[i].split(' ')[1])
+      }
+      dates.push(value[i].split(' ')[0])
+    }
+  } else {
+    if (value.includes(':')) {
+      times.push(value.split(' ')[1])
+    }
+    dates.push(value.split(' ')[0])
+  }
+  return [dates, times]
+}
+
+const stringify = (o, range = false, time = false) => {
+  const initialValue = range ? [] : ''
+  const separator = time ? ' ' : ''
+  return values(o).reduce((acc, v, i, arr) => {
+    return range
+      ? acc.concat(values(time ? v : arr[i].date).join(separator))
+      : values(time ? arr[0] : arr[0].date).join(separator)
+  }, initialValue)
+}
 
 const validator = (name, message, format = BASE_DATE_FORMAT) => {
   return yup.string().test(name, message, function (value) {
@@ -73,54 +118,71 @@ export default {
     const isRangeStartFocused = ref(false)
     const isRangeEndFocused = ref(false)
 
-    const splittedDate = isArray(props.value)
-      ? props.value.map((d) => d.split(' ')[0])
-      : props.value.split(' ')[0]
-
+    const [dates, times] = dateTimeSplitter(props.value)
     const values = ref({
-      start: isArray(props.value) ? splittedDate[0] : splittedDate,
-      end: isArray(props.value) ? splittedDate[1] : splittedDate
+      start: {
+        date: dates[0],
+        time: times.length ? times[0] : DEFAULT_TIME
+      },
+      end: {
+        date: dates[1] ? dates[1] : dates[0],
+        time: times.length ? times[1] : DEFAULT_TIME
+      }
     })
 
     const incorrectDateErrorMessage = props.isRange ? 'invalid range' : 'invalid date'
+    const incorrectTimeErrorMessage = 'invalid time'
+
     const { handleSubmit, setValues, setFieldValue } = useForm({
       initialValues: values
     })
     const { value: startValue, errorMessage: startValueErrorMessage } = useField(
-      'start',
-      validator('range-start', incorrectDateErrorMessage, BASE_DATE_FORMAT),
+      'start.date',
+      validator('start-date', incorrectDateErrorMessage, BASE_DATE_FORMAT),
       { validateOnValueUpdate: false }
     )
     const { value: endValue, errorMessage: endValueErrorMessage } = useField(
-      'end',
-      validator('range-end', incorrectDateErrorMessage, BASE_DATE_FORMAT),
+      'end.date',
+      validator('end-date', incorrectDateErrorMessage, BASE_DATE_FORMAT),
+      { validateOnValueUpdate: false }
+    )
+    const { value: startTime, errorMessage: startTimeErrorMessage } = useField(
+      'start.time',
+      validator('start-time', incorrectTimeErrorMessage, HHMM),
+      { validateOnValueUpdate: false }
+    )
+    const { value: endTime, errorMessage: endTimeErrorMessage } = useField(
+      'end.time',
+      validator('end-time', incorrectTimeErrorMessage, HHMM),
       { validateOnValueUpdate: false }
     )
 
     const onSubmit = handleSubmit((formValues) => {
       if (
-        isSame(startValue.value, values.value.start) &&
-        isSame(endValue.value, values.value.end)
+        isSame(startValue.value, values.value.start.date) &&
+        isSame(endValue.value, values.value.end.date)
       ) {
         return
       }
 
       if (props.isRange) {
         if (isRangeStartFocused.value) {
-          const startValue = formValues.start
+          const startValue = formValues.start.date
           if (
             isBefore(startValue, activeDate.value, 'year') ||
             isAfter(startValue, activeDate.value, 'year')
           ) {
             const updatedEndValue = setToDate(
-              values.value.end,
+              values.value.end.date,
               'year',
               toDate(startValue).getFullYear()
             ).format(BASE_DATE_FORMAT)
-            const updatedValues = { start: startValue, end: updatedEndValue }
+            const updatedValues = factory(startValue, updatedEndValue)
+            console.log(updatedValues)
             values.value = updatedValues
             setValues(updatedValues)
-            ctx.emit('update:value', Object.values(values.value))
+            const value = stringify(values.value, props.isRange, props.isTime)
+            ctx.emit('update:value', value)
           } else {
             // So that when user enter and change the start date, the number of days between
             // the start and end of the range remains the same. For example, the next date
@@ -130,26 +192,53 @@ export default {
             // and vice versa, when start date is changed from 12 to 10 or 9. End date should be
             // shifted from 15 to 13 or 12
 
-            const diff = Math.abs(dayjs(startValue).diff(values.value.start, 'day'))
-            const addOrSubtract = isBefore(startValue, values.value.start) ? 'subtract' : 'add'
+            const diff = Math.abs(dayjs(startValue).diff(values.value.start.date, 'day'))
+            const addOrSubtract = isBefore(startValue, values.value.start.date) ? 'subtract' : 'add'
 
-            const updatedEndDateWithDiff = dayjs(values.value.end)
+            const updatedEndDateWithDiff = dayjs(values.value.end.date)
               [addOrSubtract](diff, 'day')
               .format(BASE_DATE_FORMAT)
 
-            const updatedValues = { start: startValue, end: updatedEndDateWithDiff }
+            const updatedValues = factory(startValue, updatedEndDateWithDiff)
             values.value = updatedValues
             setValues(updatedValues)
-            ctx.emit('update:value', Object.values(values.value))
+            const value = stringify(values.value, props.isRange, props.isTime)
+            ctx.emit('update:value', value)
           }
         } else {
           values.value = formValues
-          ctx.emit('update:value', Object.values(formValues))
+          const value = stringify(values.value, props.isRange, props.isTime)
+          ctx.emit('update:value', value)
         }
       } else {
-        ctx.emit('update:value', formValues.start)
+        console.log(factory(formValues.start, formValues.start))
+        values.value = factory(formValues.start, formValues.start)
+        setValues(factory(formValues.start, formValues.start))
+        const value = stringify(values.value, props.isRange, props.isTime)
+        ctx.emit('update:value', value)
       }
     })
+
+    watch(
+      () => props.value,
+      (value) => (activeDate.value = toDate(isArray(value) ? value[0] : value, BASE_DATE_FORMAT)),
+      { immediate: true }
+    )
+
+    watch(
+      () => props.isRange,
+      (value) => {
+        if (value) {
+          const formattedStartDate = format(values.value.start.date, BASE_DATE_FORMAT)
+          values.value = factory(formattedStartDate, formattedStartDate)
+          const value = stringify(values.value, props.isRange, props.isTime)
+          ctx.emit('update:value', value)
+        } else {
+          const value = stringify(values.value, props.isRange, props.isTime)
+          ctx.emit('update:value', value)
+        }
+      }
+    )
 
     return {
       activeDate,
@@ -160,6 +249,10 @@ export default {
       startValueErrorMessage,
       endValue,
       endValueErrorMessage,
+      startTime,
+      startTimeErrorMessage,
+      endTime,
+      endTimeErrorMessage,
       onSubmit,
       setValues,
       setFieldValue
@@ -202,44 +295,39 @@ export default {
   },
 
   watch: {
-    value: {
-      handler(value) {
-        this.activeDate = isArray(value) ? (this.isRangeStartFocused ? value[0] : value[1]) : value
-      },
-      immediate: true
-    },
-    isRange: {
-      handler(value) {
-        if (value) {
-          if (isArray(this.value)) {
-            // o is object with two properties which has as values formatted
-            // date strings : { start: BASE_DATE_FORMAT, end: BASE_DATE_FORMAT }
-            const o = this.value.reduce((acc, d, i) => {
-              // if some how props.value has more than two elements, as object property values
-              // should be returned first and second array element and others should be skipped
-              return i > 1
-                ? acc
-                : {
-                    ...acc,
-                    [i <= 0 ? 'start' : 'end']: dayjs(d).format(BASE_DATE_FORMAT)
-                  }
-            }, {})
-            this.values = o
-            this.setValues(o)
-            this.activeDate = dayjs(o.start, BASE_DATE_FORMAT).toDate()
-          } else {
-            const formattedValue = format(this.value, BASE_DATE_FORMAT)
-            this.values = { start: formattedValue, end: formattedValue }
-            this.setValues({ start: formattedValue, end: formattedValue })
-            this.activeDate = this.value
-          }
-          this.submitRanges()
-          this.focusRangeInput(this.$refs.end).then(() => this.focusRangeEnd())
-        } else {
-          this.$emit('update:value', isArray(this.value) ? this.value[0] : this.value)
-        }
-      }
-    }
+    // isRange: {
+    //   handler(value) {
+    //     if (value) {
+    //       if (isArray(this.value)) {
+    //         // o is object with two properties which has as values formatted
+    //         // date strings : { start: BASE_DATE_FORMAT, end: BASE_DATE_FORMAT }
+    //         const o = this.value.reduce((acc, d, i) => {
+    //           // if some how props.value has more than two elements, as object property values
+    //           // should be returned first and second array element and others should be skipped
+    //           return i > 1
+    //             ? acc
+    //             : {
+    //                 ...acc,
+    //                 [i <= 0 ? 'start' : 'end']: dayjs(d).format(BASE_DATE_FORMAT)
+    //               }
+    //         }, {})
+    //         this.values = o
+    //         this.setValues(o)
+    //         this.activeDate = dayjs(o.start, BASE_DATE_FORMAT).toDate()
+    //         console.log(this.activeDate)
+    //       } else {
+    //         const formattedValue = format(this.value, BASE_DATE_FORMAT)
+    //         this.values = { start: formattedValue, end: formattedValue }
+    //         this.setValues({ start: formattedValue, end: formattedValue })
+    //         this.activeDate = this.value
+    //       }
+    //       this.submitRanges()
+    //       this.focusRangeInput(this.$refs.end).then(() => this.focusRangeEnd())
+    //     } else {
+    //       this.$emit('update:value', isArray(this.value) ? this.value[0] : this.value)
+    //     }
+    //   }
+    // }
   },
 
   mounted() {
@@ -272,9 +360,9 @@ export default {
       date = format(date, BASE_DATE_FORMAT)
 
       if (this.isRange) {
-        if (isSame(this.values.start, date)) {
+        if (isSame(this.values.start.date, date)) {
           this.focusRangeStart()
-        } else if (isSame(this.values.end, date)) {
+        } else if (isSame(this.values.end.date, date)) {
           this.focusRangeEnd()
         } else {
           if (this.isRangeStartFocused) {
@@ -282,17 +370,14 @@ export default {
           } else {
             this.updateRangeEnd(date)
           }
-          this.submitRanges()
+          const value = stringify(this.values, this.isRange, this.isTime)
+          this.$emit('update:value', value)
         }
         this.activeDate = toDate(date)
       } else {
         this.updateRangeStart(date)
         this.$emit('update:value', date)
       }
-    },
-    submitRanges() {
-      const dates = Object.values(this.values)
-      this.$emit('update:value', dates)
     },
     async focusRangeInput(ref) {
       this.$nextTick(() => {
@@ -303,39 +388,39 @@ export default {
       this.isRangeStartFocused = true
       this.isRangeEndFocused = false
       if (this.isRange) {
-        this.activeDate = dayjs(this.values.start, BASE_DATE_FORMAT).toDate()
+        this.activeDate = dayjs(this.values.start.date, BASE_DATE_FORMAT).toDate()
       }
     },
     focusRangeEnd() {
       this.isRangeEndFocused = true
       this.isRangeStartFocused = false
       if (this.isRange) {
-        this.activeDate = dayjs(this.values.end, BASE_DATE_FORMAT).toDate()
+        this.activeDate = dayjs(this.values.end.date, BASE_DATE_FORMAT).toDate()
       }
     },
     updateRangeStart(value) {
       if (this.isRange) {
-        if (isAfter(value, this.values.end)) {
-          this.values.start = this.values.end
-          this.setFieldValue('start', this.values.end)
+        if (isAfter(value, this.values.end.date)) {
+          this.values.start.date = this.values.end.date
+          this.setFieldValue('start.date', this.values.end.date)
           this.updateRangeEnd(value)
           this.focusRangeEnd()
         } else {
-          this.values.start = value
-          this.setFieldValue('start', value)
+          this.values.start.date = value
+          this.setFieldValue('start.date', value)
         }
       } else {
-        this.values.start = value
-        this.setFieldValue('start', value)
+        this.values.start.date = value
+        this.setFieldValue('start.date', value)
       }
     },
     updateRangeEnd(value) {
-      if (isBefore(value, this.values.start)) {
+      if (isBefore(value, this.values.start.date)) {
         this.updateRangeStart(value)
         this.focusRangeStart()
       } else {
-        this.values.end = value
-        this.setFieldValue('end', value)
+        this.values.end.date = value
+        this.setFieldValue('end.date', value)
       }
     },
     onKeydown(e) {
@@ -385,12 +470,9 @@ export default {
           ]"
         >
           <!-- start range input -->
-          <div
-            class="w-[fit-content] flex flex-col"
-            :class="[isRange ? 'w-[fit-content]' : 'w-[168px]']"
-          >
+          <div class="flex flex-col" :class="[isRange ? 'w-[fit-content]' : 'w-[168px]']">
             <div
-              class="h-[22px] flex items-center border rounded-[3px]"
+              class="w-full h-[22px] flex items-center border rounded-[3px]"
               :class="[
                 isRange && isRangeStartFocused
                   ? 'border-sky-600 bg-blue-500/5 ring-blue-500/10 focus-within:ring-2'
@@ -414,10 +496,13 @@ export default {
                 @blur="onSubmit"
                 @keydown.enter="onSubmit"
               />
-              <div v-if="isTime" class="flex w-[1px] h-[14px] bg-gray-400 mr-[4px]"></div>
+              <div
+                class="w-[1px] h-[14px] bg-gray-400 mr-[3px] z-2"
+                :class="[isTime ? 'flex' : 'hidden']"
+              ></div>
               <input
                 v-if="isTime"
-                :value="'12:24'"
+                v-model="startTime"
                 class="w-[82px] bg-[transparent] focus:outline-none text-[12px] px-[4px]"
                 type="text"
                 @focus="focusRangeStart"
@@ -455,15 +540,18 @@ export default {
                   }
                 ]"
                 type="text"
-                placeholder="'End date'"
+                placeholder="End date"
                 @focus="focusRangeEnd"
                 @blur="onSubmit"
                 @keydown.enter="onSubmit"
               />
-              <div v-if="isTime" class="flex w-[1px] h-[14px] bg-gray-400 mr-[4px]"></div>
+              <div
+                class="flex w-[1px] h-[14px] bg-gray-400 mr-[3px]"
+                :class="[isTime ? 'flex' : 'hidden']"
+              ></div>
               <input
                 v-if="isTime"
-                :value="'12:24'"
+                v-model="endTime"
                 class="w-[82px] bg-[transparent] focus:outline-none text-[12px] px-[4px]"
                 type="text"
                 @focus="focusRangeEnd"
@@ -507,13 +595,14 @@ export default {
             'v-calendar__day--today': day.isToday,
             'v-calendar__day--outside': day.isOutside,
             'v-calendar__day--selected': !isRange && isSame(day.Date, value),
-            'v-calendar__day--range-start': isRange && isSame(day.Date, values.start),
-            'v-calendar__day--range': isRange && isBetween(day.Date, values.start, values.end),
-            'v-calendar__day--range-end': isRange && isSame(day.Date, values.end),
+            'v-calendar__day--range-start': isRange && isSame(day.Date, values.start.date),
+            'v-calendar__day--range':
+              isRange && isBetween(day.Date, values.start.date, values.end.date),
+            'v-calendar__day--range-end': isRange && isSame(day.Date, values.end.date),
             'v-calendar__day--range-start-focused':
-              isRange && isRangeStartFocused && isSame(day.Date, values.start),
+              isRange && isRangeStartFocused && isSame(day.Date, values.start.date),
             'v-calendar__day--range-end-focused':
-              isRange && isRangeEndFocused && isSame(day.Date, values.end),
+              isRange && isRangeEndFocused && isSame(day.Date, values.end.date),
             'v-calendar__day--focused': isCalendarFocused && isSame(day.Date, activeDate)
           }"
           @click="select(day.Date)"
