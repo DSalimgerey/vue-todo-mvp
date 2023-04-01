@@ -476,20 +476,18 @@ export default {
               :class="[
                 isRange && isRangeStartFocused
                   ? 'border-sky-600 bg-blue-500/5 ring-blue-500/10 focus-within:ring-2'
-                  : 'bg-gray-50 border-gray-400'
+                  : 'bg-gray-50 border-gray-400',
+                {
+                  'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
+                    startValueErrorMessage && startTimeErrorMessage
+                }
               ]"
             >
               <input
                 v-model="startValue"
                 ref="start"
                 class="bg-[transparent] focus:outline-none text-[12px] px-[4px]"
-                :class="[
-                  isRange || isTime ? 'w-[82px]' : 'w-full',
-                  {
-                    'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
-                      startValueErrorMessage
-                  }
-                ]"
+                :class="[isRange || isTime ? 'w-[82px]' : 'w-full']"
                 type="text"
                 :placeholder="isRange ? 'Start date' : 'Date'"
                 @focus="focusRangeStart"
@@ -525,20 +523,18 @@ export default {
               :class="[
                 isRange && isRangeEndFocused
                   ? 'border-sky-600 bg-blue-500/5 ring-blue-500/10 focus-within:ring-2'
-                  : 'bg-gray-50 border-gray-400'
+                  : 'bg-gray-50 border-gray-400',
+                {
+                  'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
+                    endValueErrorMessage && endTimeErrorMessage
+                }
               ]"
             >
               <input
                 v-model="endValue"
                 ref="end"
                 class="bg-[transparent] focus:outline-none text-[12px] px-[4px]"
-                :class="[
-                  isRange || isTime ? 'w-[82px]' : 'w-full',
-                  {
-                    'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
-                      endValueErrorMessage
-                  }
-                ]"
+                :class="[isRange || isTime ? 'w-[82px]' : 'w-full']"
                 type="text"
                 placeholder="End date"
                 @focus="focusRangeEnd"
