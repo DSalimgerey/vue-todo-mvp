@@ -35,7 +35,7 @@ export const isSame = (d1, d2, unit = 'date') => dayjs(d1).isSame(d2, unit)
 
 export const toString = (date) => dayjs(date).toString()
 
-export const toDate = (value) => dayjs(value).toDate()
+export const toDate = (value, format) => dayjs(value, format).toDate()
 
 export const format = (date, template) => dayjs(date).format(template)
 
@@ -76,3 +76,5 @@ export const setToDate = (date, unit, value) => dayjs(date).set(unit, value)
  */
 export const isValid = (date, format = BASE_DATE_FORMAT, strict = true) =>
   dayjs(date, format, strict).isValid()
+
+export const values = (o) => Object.values(o)
