@@ -1,4 +1,9 @@
 <script>
+// TODO (fix): end input not focused when switch to rang mode
+// TODO (fix): when switching to the range and back, the layout of the inputs is shifted
+// TODO (fix): in range mode after selecting the second date via 'Enter' key and after pressing
+//             the 'LeftArrow' key the focus is not shifting correctly
+
 import { ref, watch } from 'vue'
 import dayjs from 'dayjs'
 import isTodayPlugin from 'dayjs/plugin/isToday'
@@ -232,6 +237,7 @@ export default {
         if (value) {
           const formattedStartDate = format(values.value.start.date, BASE_DATE_FORMAT)
           values.value = factory(formattedStartDate, formattedStartDate)
+          setValues(values.value)
           const value = stringify(values.value, props.isRange, props.isTime)
           ctx.emit('update:value', value)
         } else {
