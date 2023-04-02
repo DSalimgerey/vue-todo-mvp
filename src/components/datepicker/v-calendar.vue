@@ -469,23 +469,30 @@ export default {
     <div class="v-calendar__header">
       <div class="mb-[6px]">
         <div
-          class="w-[fit-content] grid gap-[4px]"
+          class="w-[168px] grid gap-[4px]"
           :class="[
             isRange
               ? isTime
-                ? 'grid-rows-2 grid-cols-1'
+                ? 'grid-rows-auto grid-cols-1'
                 : 'grid-rows-1 grid-cols-2'
               : 'grid-rows-1 grid-cols-1'
           ]"
         >
           <!-- start range input -->
-          <div class="flex flex-col" :class="[isRange ? 'w-[fit-content]' : 'w-[168px]']">
+          <div
+            class="w-[fit-content] h-[fit-content] flex flex-col"
+            :class="[
+              isRange ? 'w-[fit-content]' : 'w-[168px]',
+              startValueErrorMessage || startTimeErrorMessage ? 'h-[fit-content]' : 'h-[22px]'
+            ]"
+          >
             <div
-              class="w-full h-[22px] flex items-center border rounded-[3px]"
+              class="h-[22px] flex items-center border rounded-[3px]"
               :class="[
                 isRange && isRangeStartFocused
                   ? 'border-sky-600 bg-blue-500/5 ring-blue-500/10 focus-within:ring-2'
-                  : 'bg-gray-50 border-gray-400',
+                  : 'w-full bg-gray-50 border-gray-400',
+                isRange ? (isTime ? 'w-full' : 'w-[82px]') : 'w-full',
                 {
                   'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
                     startValueErrorMessage || startTimeErrorMessage
@@ -495,8 +502,7 @@ export default {
               <input
                 v-model="startValue"
                 ref="start"
-                class="bg-[transparent] focus:outline-none text-[12px] px-[4px]"
-                :class="[isRange || isTime ? 'w-[82px]' : 'w-full']"
+                class="w-full bg-[transparent] focus:outline-none text-[12px] px-[4px]"
                 type="text"
                 :placeholder="isRange ? 'Start date' : 'Date'"
                 @focus="focusRangeStart"
@@ -529,26 +535,30 @@ export default {
           <!-- end range input -->
           <div
             v-if="isRange"
-            class="w-[fit-content] flex flex-col"
-            :class="[isRange ? 'w-[fit-content]' : 'w-[168px]']"
+            class="w-[fit-content] h-[fit-content] flex flex-col"
+            :class="
+              ([isRange ? 'w-[fit-content]' : 'w-[168px]'],
+              endValueErrorMessage || endTimeErrorMessage ? 'h-[fit-content]' : 'h-[22px]')
+            "
           >
             <div
-              class="h-[22px] flex items-center border rounded-[3px]"
+              class="w-[fit-content] h-[22px] flex items-center border rounded-[3px]"
               :class="[
                 isRange && isRangeEndFocused
                   ? 'border-sky-600 bg-blue-500/5 ring-blue-500/10 focus-within:ring-2'
-                  : 'bg-gray-50 border-gray-400',
+                  : 'w-full bg-gray-50 border-gray-400',
+                isRange ? (isTime ? 'w-full' : 'w-[82px]') : 'w-full',
                 {
                   'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
-                    endValueErrorMessage || endTimeErrorMessage
+                    endValueErrorMessage || endTimeErrorMessage,
+                  'w-full': isTime
                 }
               ]"
             >
               <input
                 v-model="endValue"
                 ref="end"
-                class="bg-[transparent] focus:outline-none text-[12px] px-[4px]"
-                :class="[isRange || isTime ? 'w-[82px]' : 'w-full']"
+                class="w-full bg-[transparent] focus:outline-none text-[12px] px-[4px]"
                 type="text"
                 placeholder="End date"
                 @focus="focusRangeEnd"
@@ -562,12 +572,14 @@ export default {
                 class="w-[82px] bg-[transparent] focus:outline-none text-[12px] px-[4px]"
                 type="text"
                 @focus="focusRangeEnd"
+                @blur="onSubmit"
+                @keydown.enter="onSubmit"
               />
             </div>
 
             <div
               v-if="endValueErrorMessage || endTimeErrorMessage"
-              class="grid mt-[4px]"
+              class="w-[fit-content] grid mt-[4px]"
               style="grid-template-columns: repeat(2, 84px)"
             >
               <span class="text-[11px] text-red-500">{{ endValueErrorMessage }}</span>
