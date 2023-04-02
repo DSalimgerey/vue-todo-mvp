@@ -138,7 +138,7 @@ export default {
     const incorrectDateErrorMessage = props.isRange ? 'invalid range' : 'invalid date'
     const incorrectTimeErrorMessage = 'invalid time'
 
-    const { handleSubmit, setValues, setFieldValue } = useForm({
+    const { errors, handleSubmit, setValues, setFieldValue } = useForm({
       initialValues: values
     })
     const { value: startValue, errorMessage: startValueErrorMessage } = useField(
@@ -163,66 +163,67 @@ export default {
     )
 
     const onSubmit = handleSubmit((formValues) => {
-      if (
-        isSame(startValue.value, values.value.start.date) &&
-        isSame(endValue.value, values.value.end.date)
-      ) {
-        return
-      }
+      console.log(formValues)
+      // if (
+      //   isSame(startValue.value, values.value.start.date) &&
+      //   isSame(endValue.value, values.value.end.date)
+      // ) {
+      //   return
+      // }
 
-      if (props.isRange) {
-        if (isRangeStartFocused.value) {
-          const startValue = formValues.start.date
-          if (
-            isBefore(startValue, activeDate.value, 'year') ||
-            isAfter(startValue, activeDate.value, 'year')
-          ) {
-            const updatedEndValue = setToDate(
-              values.value.end.date,
-              'year',
-              toDate(startValue).getFullYear()
-            ).format(BASE_DATE_FORMAT)
-            values.value.start.date = startValue
-            values.value.end.date = updatedEndValue
-            setFieldValue('start.date', startValue)
-            setFieldValue('end.date', updatedEndValue)
-            const value = stringify(values.value, props.isRange, props.isTime)
-            ctx.emit('update:value', value)
-          } else {
-            // So that when user enter and change the start date, the number of days between
-            // the start and end of the range remains the same. For example, the next date
-            // is selected as the value of the range - 12 / 15 (there are two days between
-            // the two ends of the range: 13 and 14), if the start is changed to 14,
-            // the number of intermediate days will remain (2 days), and the end will shift by 17 (from 15)
-            // and vice versa, when start date is changed from 12 to 10 or 9. End date should be
-            // shifted from 15 to 13 or 12
+      // if (props.isRange) {
+      //   if (isRangeStartFocused.value) {
+      //     const startValue = formValues.start.date
+      //     if (
+      //       isBefore(startValue, activeDate.value, 'year') ||
+      //       isAfter(startValue, activeDate.value, 'year')
+      //     ) {
+      //       const updatedEndValue = setToDate(
+      //         values.value.end.date,
+      //         'year',
+      //         toDate(startValue).getFullYear()
+      //       ).format(BASE_DATE_FORMAT)
+      //       values.value.start.date = startValue
+      //       values.value.end.date = updatedEndValue
+      //       setFieldValue('start.date', startValue)
+      //       setFieldValue('end.date', updatedEndValue)
+      //       const value = stringify(values.value, props.isRange, props.isTime)
+      //       ctx.emit('update:value', value)
+      //     } else {
+      //       // So that when user enter and change the start date, the number of days between
+      //       // the start and end of the range remains the same. For example, the next date
+      //       // is selected as the value of the range - 12 / 15 (there are two days between
+      //       // the two ends of the range: 13 and 14), if the start is changed to 14,
+      //       // the number of intermediate days will remain (2 days), and the end will shift by 17 (from 15)
+      //       // and vice versa, when start date is changed from 12 to 10 or 9. End date should be
+      //       // shifted from 15 to 13 or 12
 
-            const diff = Math.abs(dayjs(startValue).diff(values.value.start.date, 'day'))
-            const addOrSubtract = isBefore(startValue, values.value.start.date) ? 'subtract' : 'add'
+      //       const diff = Math.abs(dayjs(startValue).diff(values.value.start.date, 'day'))
+      //       const addOrSubtract = isBefore(startValue, values.value.start.date) ? 'subtract' : 'add'
 
-            const updatedEndDateWithDiff = dayjs(values.value.end.date)
-              [addOrSubtract](diff, 'day')
-              .format(BASE_DATE_FORMAT)
+      //       const updatedEndDateWithDiff = dayjs(values.value.end.date)
+      //         [addOrSubtract](diff, 'day')
+      //         .format(BASE_DATE_FORMAT)
 
-            // const updatedValues = Object.assign(values.value, { ...values.value, start: { ...values.value.start, date: startValue } })
-            values.value.start.date = startValue
-            values.value.end.date = updatedEndDateWithDiff
-            setFieldValue('start.date', startValue)
-            setFieldValue('end.date', updatedEndDateWithDiff)
-            const value = stringify(values.value, props.isRange, props.isTime)
-            ctx.emit('update:value', value)
-          }
-        } else {
-          values.value = formValues
-          const value = stringify(values.value, props.isRange, props.isTime)
-          ctx.emit('update:value', value)
-        }
-      } else {
-        values.value.start = { ...values.value.start, date: formValues.start.date }
-        setFieldValue('start.date', formValues.start.date)
-        const value = stringify(values.value, props.isRange, props.isTime)
-        ctx.emit('update:value', value)
-      }
+      //       // const updatedValues = Object.assign(values.value, { ...values.value, start: { ...values.value.start, date: startValue } })
+      //       values.value.start.date = startValue
+      //       values.value.end.date = updatedEndDateWithDiff
+      //       setFieldValue('start.date', startValue)
+      //       setFieldValue('end.date', updatedEndDateWithDiff)
+      //       const value = stringify(values.value, props.isRange, props.isTime)
+      //       ctx.emit('update:value', value)
+      //     }
+      //   } else {
+      //     values.value = formValues
+      //     const value = stringify(values.value, props.isRange, props.isTime)
+      //     ctx.emit('update:value', value)
+      //   }
+      // } else {
+      //   values.value.start = { ...values.value.start, date: formValues.start.date }
+      //   setFieldValue('start.date', formValues.start.date)
+      //   const value = stringify(values.value, props.isRange, props.isTime)
+      //   ctx.emit('update:value', value)
+      // }
     })
 
     watch(
@@ -260,6 +261,7 @@ export default {
       startTimeErrorMessage,
       endTime,
       endTimeErrorMessage,
+      errors,
       onSubmit,
       setValues,
       setFieldValue
@@ -486,7 +488,7 @@ export default {
                   : 'bg-gray-50 border-gray-400',
                 {
                   'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
-                    startValueErrorMessage && startTimeErrorMessage
+                    startValueErrorMessage || startTimeErrorMessage
                 }
               ]"
             >
@@ -501,22 +503,27 @@ export default {
                 @blur="onSubmit"
                 @keydown.enter="onSubmit"
               />
-              <div
-                class="w-[1px] h-[14px] bg-gray-400 mr-[3px] z-2"
-                :class="[isTime ? 'flex' : 'hidden']"
-              ></div>
+              <div v-if="isTime" class="w-[1px] h-[14px] bg-gray-400 z-2"></div>
               <input
                 v-if="isTime"
                 v-model="startTime"
                 class="w-[82px] bg-[transparent] focus:outline-none text-[12px] px-[4px]"
                 type="text"
                 @focus="focusRangeStart"
+                @blur="onSubmit"
+                @keydown.enter="onSubmit"
               />
             </div>
 
-            <span v-show="startValueErrorMessage" class="text-[12px] text-red-500 mt-[4px]">{{
-              startValueErrorMessage
-            }}</span>
+            <div
+              v-if="startValueErrorMessage || startTimeErrorMessage"
+              class="grid mt-[4px]"
+              style="grid-template-columns: repeat(2, 84px)"
+            >
+              <span class="text-[11px] text-red-500">{{ startValueErrorMessage }}</span>
+
+              <span class="text-[11px] text-red-500">{{ startTimeErrorMessage }}</span>
+            </div>
           </div>
 
           <!-- end range input -->
@@ -533,7 +540,7 @@ export default {
                   : 'bg-gray-50 border-gray-400',
                 {
                   'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
-                    endValueErrorMessage && endTimeErrorMessage
+                    endValueErrorMessage || endTimeErrorMessage
                 }
               ]"
             >
@@ -548,10 +555,7 @@ export default {
                 @blur="onSubmit"
                 @keydown.enter="onSubmit"
               />
-              <div
-                class="flex w-[1px] h-[14px] bg-gray-400 mr-[3px]"
-                :class="[isTime ? 'flex' : 'hidden']"
-              ></div>
+              <div v-if="isTime" class="flex w-[1px] h-[14px] bg-gray-400"></div>
               <input
                 v-if="isTime"
                 v-model="endTime"
@@ -561,9 +565,15 @@ export default {
               />
             </div>
 
-            <span v-show="endValueErrorMessage" class="text-[12px] text-red-500 mt-[4px]">{{
-              endValueErrorMessage
-            }}</span>
+            <div
+              v-if="endValueErrorMessage || endTimeErrorMessage"
+              class="grid mt-[4px]"
+              style="grid-template-columns: repeat(2, 84px)"
+            >
+              <span class="text-[11px] text-red-500">{{ endValueErrorMessage }}</span>
+
+              <span class="text-[11px] text-red-500">{{ endTimeErrorMessage }}</span>
+            </div>
           </div>
         </div>
       </div>
