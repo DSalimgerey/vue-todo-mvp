@@ -177,10 +177,10 @@ export default {
               'year',
               toDate(startValue).getFullYear()
             ).format(BASE_DATE_FORMAT)
-            const updatedValues = factory(startValue, updatedEndValue)
-            console.log(updatedValues)
-            values.value = updatedValues
-            setValues(updatedValues)
+            values.value.start.date = startValue
+            values.value.end.date = updatedEndValue
+            setFieldValue('start.date', startValue)
+            setFieldValue('end.date', updatedEndValue)
             const value = stringify(values.value, props.isRange, props.isTime)
             ctx.emit('update:value', value)
           } else {
@@ -199,9 +199,11 @@ export default {
               [addOrSubtract](diff, 'day')
               .format(BASE_DATE_FORMAT)
 
-            const updatedValues = factory(startValue, updatedEndDateWithDiff)
-            values.value = updatedValues
-            setValues(updatedValues)
+            // const updatedValues = Object.assign(values.value, { ...values.value, start: { ...values.value.start, date: startValue } })
+            values.value.start.date = startValue
+            values.value.end.date = updatedEndDateWithDiff
+            setFieldValue('start.date', startValue)
+            setFieldValue('end.date', updatedEndDateWithDiff)
             const value = stringify(values.value, props.isRange, props.isTime)
             ctx.emit('update:value', value)
           }
@@ -211,9 +213,8 @@ export default {
           ctx.emit('update:value', value)
         }
       } else {
-        console.log(factory(formValues.start, formValues.start))
-        values.value = factory(formValues.start, formValues.start)
-        setValues(factory(formValues.start, formValues.start))
+        values.value.start = { ...values.value.start, date: formValues.start.date }
+        setFieldValue('start.date', formValues.start.date)
         const value = stringify(values.value, props.isRange, props.isTime)
         ctx.emit('update:value', value)
       }
