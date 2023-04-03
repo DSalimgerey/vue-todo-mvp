@@ -211,12 +211,8 @@ export default {
         if (value) {
           values.value.end.date = values.value.start.date
           setFieldValue('end.date', values.value.start.date)
-          const value = stringify(values.value, props.isRange, props.isTime)
-          ctx.emit('update:value', value)
-        } else {
-          const value = stringify(values.value, props.isRange, props.isTime)
-          ctx.emit('update:value', value)
         }
+        ctx.emit('update:value', stringify(values.value, props.isRange, props.isTime))
       }
     )
 
