@@ -32,25 +32,11 @@ import {
   isBetween,
   isAfter,
   isBefore,
-  setToDate,
   isValid,
   values
 } from '../../utils'
 
 dayjs.extend(isTodayPlugin)
-
-function factory(date1, date2, time1 = DEFAULT_TIME, time2 = DEFAULT_TIME) {
-  return {
-    start: {
-      date: date1,
-      time: time1
-    },
-    end: {
-      date: date2,
-      time: time2
-    }
-  }
-}
 
 function dateTimeSplitter(value) {
   const dates = []
@@ -124,6 +110,7 @@ export default {
     const isRangeEndFocused = ref(false)
 
     const [dates, times] = dateTimeSplitter(props.value)
+    console.log(dates, times)
     const values = ref({
       start: {
         date: dates[0],
@@ -131,14 +118,19 @@ export default {
       },
       end: {
         date: dates[1] ? dates[1] : dates[0],
-        time: times.length ? times[1] : DEFAULT_TIME
+        time: times[1] !== undefined ? times[1] : DEFAULT_TIME
       }
     })
 
     const incorrectDateErrorMessage = props.isRange ? 'invalid range' : 'invalid date'
     const incorrectTimeErrorMessage = 'invalid time'
 
-    const { errors, handleSubmit, setValues, setFieldValue } = useForm({
+    const {
+      handleSubmit,
+      setValues,
+      setFieldValue,
+      values: formValues
+    } = useForm({
       initialValues: values
     })
     const { value: startValue, errorMessage: startValueErrorMessage } = useField(
@@ -162,8 +154,13 @@ export default {
       { validateOnValueUpdate: false }
     )
 
+    // const onSubmit = () => console.log(formValues)
     const onSubmit = handleSubmit((formValues) => {
       console.log(formValues)
+      values.value = formValues
+      ctx.emit('update:value', stringify(formValues, props.isRange, props.isTime))
+
+      // console.log(formValues)
       // if (
       //   isSame(startValue.value, values.value.start.date) &&
       //   isSame(endValue.value, values.value.end.date)
@@ -205,7 +202,6 @@ export default {
       //         [addOrSubtract](diff, 'day')
       //         .format(BASE_DATE_FORMAT)
 
-      //       // const updatedValues = Object.assign(values.value, { ...values.value, start: { ...values.value.start, date: startValue } })
       //       values.value.start.date = startValue
       //       values.value.end.date = updatedEndDateWithDiff
       //       setFieldValue('start.date', startValue)
@@ -219,7 +215,8 @@ export default {
       //     ctx.emit('update:value', value)
       //   }
       // } else {
-      //   values.value.start = { ...values.value.start, date: formValues.start.date }
+      //   console.log(formValues)
+      //   values.value.start = formValues.start
       //   setFieldValue('start.date', formValues.start.date)
       //   const value = stringify(values.value, props.isRange, props.isTime)
       //   ctx.emit('update:value', value)
@@ -228,7 +225,12 @@ export default {
 
     watch(
       () => props.value,
-      (value) => (activeDate.value = toDate(isArray(value) ? value[0] : value, BASE_DATE_FORMAT)),
+      (value) => {
+        activeDate.value = toDate(
+          isArray(value) ? (isRangeStartFocused.value ? value[0] : value[1]) : value,
+          BASE_DATE_FORMAT
+        )
+      },
       { immediate: true }
     )
 
@@ -236,9 +238,8 @@ export default {
       () => props.isRange,
       (value) => {
         if (value) {
-          const formattedStartDate = format(values.value.start.date, BASE_DATE_FORMAT)
-          values.value = factory(formattedStartDate, formattedStartDate)
-          setValues(values.value)
+          values.value.end.date = values.value.start.date
+          setFieldValue('end.date', values.value.start.date)
           const value = stringify(values.value, props.isRange, props.isTime)
           ctx.emit('update:value', value)
         } else {
@@ -246,6 +247,20 @@ export default {
           ctx.emit('update:value', value)
         }
       }
+    )
+
+    watch(
+      () => props.isTime,
+      (value) => {
+        if (!value) {
+          values.value.start.time = DEFAULT_TIME
+          values.value.end.time = DEFAULT_TIME
+          setFieldValue('start.time', DEFAULT_TIME)
+          setFieldValue('end.time', DEFAULT_TIME)
+        }
+        ctx.emit('update:value', stringify(values.value, props.isRange, value))
+      },
+      { immediate: true }
     )
 
     return {
@@ -261,7 +276,6 @@ export default {
       startTimeErrorMessage,
       endTime,
       endTimeErrorMessage,
-      errors,
       onSubmit,
       setValues,
       setFieldValue
@@ -379,14 +393,13 @@ export default {
           } else {
             this.updateRangeEnd(date)
           }
-          const value = stringify(this.values, this.isRange, this.isTime)
-          this.$emit('update:value', value)
         }
         this.activeDate = toDate(date)
       } else {
         this.updateRangeStart(date)
-        this.$emit('update:value', date)
       }
+      const value = stringify(this.values, this.isRange, this.isTime)
+      this.$emit('update:value', value)
     },
     async focusRangeInput(ref) {
       this.$nextTick(() => {
@@ -492,7 +505,7 @@ export default {
                 isRange && isRangeStartFocused
                   ? 'border-sky-600 bg-blue-500/5 ring-blue-500/10 focus-within:ring-2'
                   : 'w-full bg-gray-50 border-gray-400',
-                isRange ? (isTime ? 'w-full' : 'w-[82px]') : 'w-full',
+                isRange ? (isTime ? 'w-full' : 'w-[82px]') : 'w-[168px]',
                 {
                   'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
                     startValueErrorMessage || startTimeErrorMessage
