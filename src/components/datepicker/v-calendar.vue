@@ -1,8 +1,5 @@
 <script>
 // TODO (fix): end input not focused when switch to rang mode
-// TODO (fix): when switching to the range and back, the layout of the inputs is shifted
-// TODO (fix): in range mode after selecting the second date via 'Enter' key and after pressing
-//             the 'LeftArrow' key the focus is not shifting correctly
 
 import { ref, watch } from 'vue'
 import dayjs from 'dayjs'
@@ -110,7 +107,6 @@ export default {
     const isRangeEndFocused = ref(false)
 
     const [dates, times] = dateTimeSplitter(props.value)
-    console.log(dates, times)
     const values = ref({
       start: {
         date: dates[0],
@@ -118,19 +114,14 @@ export default {
       },
       end: {
         date: dates[1] ? dates[1] : dates[0],
-        time: times[1] !== undefined ? times[1] : DEFAULT_TIME
+        time: times[1] !== undefined ? times[1] : times[0] ? times[0] : DEFAULT_TIME
       }
     })
 
     const incorrectDateErrorMessage = props.isRange ? 'invalid range' : 'invalid date'
     const incorrectTimeErrorMessage = 'invalid time'
 
-    const {
-      handleSubmit,
-      setValues,
-      setFieldValue,
-      values: formValues
-    } = useForm({
+    const { handleSubmit, setValues, setFieldValue } = useForm({
       initialValues: values
     })
     const { value: startValue, errorMessage: startValueErrorMessage } = useField(
@@ -154,73 +145,53 @@ export default {
       { validateOnValueUpdate: false }
     )
 
-    // const onSubmit = () => console.log(formValues)
     const onSubmit = handleSubmit((formValues) => {
-      console.log(formValues)
-      values.value = formValues
-      ctx.emit('update:value', stringify(formValues, props.isRange, props.isTime))
+      if (props.isRange) {
+        if (isRangeStartFocused.value) {
+          const startValue = formValues.start.date
+          if (
+            isBefore(startValue, activeDate.value, 'year') ||
+            isAfter(startValue, activeDate.value, 'year')
+          ) {
+            const updatedEndValue = dayjs(values.value.end.date)
+              .set('year', toDate(startValue).getFullYear())
+              .format(BASE_DATE_FORMAT)
+            values.value.start.date = startValue
+            values.value.end.date = updatedEndValue
+            setFieldValue('start.date', startValue)
+            setFieldValue('end.date', updatedEndValue)
+          } else {
+            // So that when user enter and change the start date, the number of days between
+            // the start and end of the range remains the same. For example, the next date
+            // is selected as the value of the range - 12 / 15 (there are two days between
+            // the two ends of the range: 13 and 14), if the start is changed to 14,
+            // the number of intermediate days will remain (2 days), and the end will shift by 17 (from 15)
+            // and vice versa, when start date is changed from 12 to 10 or 9. End date should be
+            // shifted from 15 to 13 or 12
 
-      // console.log(formValues)
-      // if (
-      //   isSame(startValue.value, values.value.start.date) &&
-      //   isSame(endValue.value, values.value.end.date)
-      // ) {
-      //   return
-      // }
+            const diff = Math.abs(dayjs(startValue).diff(values.value.start.date, 'day'))
+            const addOrSubtract = isBefore(startValue, values.value.start.date) ? 'subtract' : 'add'
 
-      // if (props.isRange) {
-      //   if (isRangeStartFocused.value) {
-      //     const startValue = formValues.start.date
-      //     if (
-      //       isBefore(startValue, activeDate.value, 'year') ||
-      //       isAfter(startValue, activeDate.value, 'year')
-      //     ) {
-      //       const updatedEndValue = setToDate(
-      //         values.value.end.date,
-      //         'year',
-      //         toDate(startValue).getFullYear()
-      //       ).format(BASE_DATE_FORMAT)
-      //       values.value.start.date = startValue
-      //       values.value.end.date = updatedEndValue
-      //       setFieldValue('start.date', startValue)
-      //       setFieldValue('end.date', updatedEndValue)
-      //       const value = stringify(values.value, props.isRange, props.isTime)
-      //       ctx.emit('update:value', value)
-      //     } else {
-      //       // So that when user enter and change the start date, the number of days between
-      //       // the start and end of the range remains the same. For example, the next date
-      //       // is selected as the value of the range - 12 / 15 (there are two days between
-      //       // the two ends of the range: 13 and 14), if the start is changed to 14,
-      //       // the number of intermediate days will remain (2 days), and the end will shift by 17 (from 15)
-      //       // and vice versa, when start date is changed from 12 to 10 or 9. End date should be
-      //       // shifted from 15 to 13 or 12
+            const updatedEndDateWithDiff = dayjs(values.value.end.date)
+              [addOrSubtract](diff, 'day')
+              .format(BASE_DATE_FORMAT)
 
-      //       const diff = Math.abs(dayjs(startValue).diff(values.value.start.date, 'day'))
-      //       const addOrSubtract = isBefore(startValue, values.value.start.date) ? 'subtract' : 'add'
+            values.value.start.date = startValue
+            values.value.end.date = updatedEndDateWithDiff
+            setFieldValue('start.date', startValue)
+            setFieldValue('end.date', updatedEndDateWithDiff)
+          }
 
-      //       const updatedEndDateWithDiff = dayjs(values.value.end.date)
-      //         [addOrSubtract](diff, 'day')
-      //         .format(BASE_DATE_FORMAT)
+          values.value = formValues
+        } else {
+          values.value = formValues
+        }
+      } else {
+        values.value = formValues
+      }
 
-      //       values.value.start.date = startValue
-      //       values.value.end.date = updatedEndDateWithDiff
-      //       setFieldValue('start.date', startValue)
-      //       setFieldValue('end.date', updatedEndDateWithDiff)
-      //       const value = stringify(values.value, props.isRange, props.isTime)
-      //       ctx.emit('update:value', value)
-      //     }
-      //   } else {
-      //     values.value = formValues
-      //     const value = stringify(values.value, props.isRange, props.isTime)
-      //     ctx.emit('update:value', value)
-      //   }
-      // } else {
-      //   console.log(formValues)
-      //   values.value.start = formValues.start
-      //   setFieldValue('start.date', formValues.start.date)
-      //   const value = stringify(values.value, props.isRange, props.isTime)
-      //   ctx.emit('update:value', value)
-      // }
+      const value = stringify(values.value, props.isRange, props.isTime)
+      ctx.emit('update:value', value)
     })
 
     watch(
