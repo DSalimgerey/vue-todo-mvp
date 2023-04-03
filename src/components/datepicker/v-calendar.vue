@@ -1,5 +1,6 @@
 <script>
 // TODO (fix): end input not focused when switch to rang mode
+// TODO (feat): if user enter second date input values less than first show error
 
 import { ref, watch } from 'vue'
 import dayjs from 'dayjs'

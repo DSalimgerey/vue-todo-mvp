@@ -1,4 +1,6 @@
 <script>
+// TODO (feat): if in range mode both of dates is same display only time of second date-time value
+
 import { computed, ref } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { usePopper } from '../../composables/use-popper'
