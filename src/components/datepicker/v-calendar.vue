@@ -1,8 +1,7 @@
 <script>
-// TODO (fix): end input not focused when switch to rang mode
 // TODO (feat): if user enter second date input values less than first show error
 
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import dayjs from 'dayjs'
 import isTodayPlugin from 'dayjs/plugin/isToday'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
@@ -106,6 +105,8 @@ export default {
     const activeDate = ref(new Date())
     const isRangeStartFocused = ref(false)
     const isRangeEndFocused = ref(false)
+
+    const endRef = ref(null)
 
     const [dates, times] = dateTimeSplitter(props.value)
     const values = ref({
@@ -214,6 +215,9 @@ export default {
           setFieldValue('end.date', values.value.start.date)
         }
         ctx.emit('update:value', stringify(values.value, props.isRange, props.isTime))
+        nextTick(() => {
+          endRef.value.focus()
+        })
       }
     )
 
@@ -244,6 +248,7 @@ export default {
       startTimeErrorMessage,
       endTime,
       endTimeErrorMessage,
+      endRef,
       onSubmit,
       setValues,
       setFieldValue
@@ -538,7 +543,7 @@ export default {
             >
               <input
                 v-model="endValue"
-                ref="end"
+                ref="endRef"
                 class="w-full bg-[transparent] focus:outline-none text-[12px] px-[4px]"
                 type="text"
                 placeholder="End date"
