@@ -1,6 +1,4 @@
 <script>
-// TODO (feat): if user enter second date input values less than first show error
-
 import { nextTick, ref, watch } from 'vue'
 import dayjs from 'dayjs'
 import isTodayPlugin from 'dayjs/plugin/isToday'
@@ -123,7 +121,7 @@ export default {
     const incorrectDateErrorMessage = props.isRange ? 'invalid range' : 'invalid date'
     const incorrectTimeErrorMessage = 'invalid time'
 
-    const { handleSubmit, setValues, setFieldValue } = useForm({
+    const { handleSubmit, setValues, setFieldValue, setFieldError } = useForm({
       initialValues: values
     })
     const { value: startValue, errorMessage: startValueErrorMessage } = useField(
@@ -186,7 +184,11 @@ export default {
 
           values.value = formValues
         } else {
-          values.value = formValues
+          if (isBefore(formValues.end.date, values.value.start.date)) {
+            setFieldError('end.date', 'invalid range')
+          } else {
+            values.value = formValues
+          }
         }
       } else {
         values.value = formValues
