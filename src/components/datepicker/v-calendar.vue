@@ -160,6 +160,10 @@ export default {
             values.value.end.date = updatedEndValue
             setFieldValue('start.date', startValue)
             setFieldValue('end.date', updatedEndValue)
+          } else if (isSame(values.value.start.date, values.value.end.date, 'date')) {
+            values.value.start.date = values.value.end.date = startValue
+            setFieldValue('start.date', startValue)
+            setFieldValue('end.date', startValue)
           } else {
             // So that when user enter and change the start date, the number of days between
             // the start and end of the range remains the same. For example, the next date
@@ -182,7 +186,9 @@ export default {
             setFieldValue('end.date', updatedEndDateWithDiff)
           }
 
-          values.value = formValues
+          values.value = isSame(values.value.start.date, values.value.end.date, 'date')
+            ? values.value
+            : formValues
         } else {
           if (isBefore(formValues.end.date, values.value.start.date)) {
             setFieldError('end.date', 'invalid range')
