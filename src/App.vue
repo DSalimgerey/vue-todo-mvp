@@ -14,7 +14,7 @@ const todos = ref([
   {
     id: '1214',
     title: 'test',
-    priority: 3,
+    priority: 0,
     dueDate: {
       value: '4-12-2023'
     }
