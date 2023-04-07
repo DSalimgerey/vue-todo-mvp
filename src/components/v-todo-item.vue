@@ -1,6 +1,8 @@
 <script>
 import VDatepicker from './datepicker/v-datepicker.vue'
 
+const priorityColors = ['gray', 'red', 'orange', 'blue']
+
 export default {
   components: {
     VDatepicker
@@ -16,6 +18,13 @@ export default {
     }
   },
 
+  computed: {
+    priorityClasses() {
+      const color = priorityColors[this.todo.priority]
+      return this.todo.priority === 0 ? `` : `border-${color}-500 bg-${color}-50`
+    }
+  },
+
   watch: {
     date(value) {
       this.$emit('updateDate', { value, id: this.todo.id })
@@ -28,6 +37,7 @@ export default {
   <li class="flex py-[3px]">
     <button
       class="w-[18px] h-[18px] border border-gray-400 rounded-full mr-[10px] mt-[2px]"
+      :class="priorityClasses"
     ></button>
     <div>
       <div>
