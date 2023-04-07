@@ -21,7 +21,7 @@ export default {
   computed: {
     priorityClasses() {
       const color = priorityColors[this.todo.priority]
-      return `border-${color}-500 bg-${color}-50`
+      return this.todo.priority === 0 ? `` : `border-${color}-500 bg-${color}-50`
     }
   },
 
