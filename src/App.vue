@@ -6,6 +6,7 @@ const todos = ref([
   {
     id: '1213',
     title: 'test',
+    priority: 1,
     dueDate: {
       value: ['4-12-2023 12:24', '4-14-2023 13:24']
     }
@@ -13,6 +14,7 @@ const todos = ref([
   {
     id: '1214',
     title: 'test',
+    priority: 3,
     dueDate: {
       value: '4-12-2023'
     }
