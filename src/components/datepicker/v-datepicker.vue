@@ -1,7 +1,7 @@
 <script>
 // TODO (feat): if in range mode both of dates is same display only time of second date-time value
 
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { usePopper } from '../../composables/use-popper'
 import { isArray, isValid } from '../../utils'
@@ -41,14 +41,7 @@ export default {
   },
 
   setup(props, ctx) {
-    const date = computed({
-      get() {
-        return props.modelValue
-      },
-      set(value) {
-        ctx.emit('update:modelValue', value)
-      }
-    })
+    const date = ref(props.modelValue)
     const reference = ref(null)
     const popper = ref(null)
     const { isOpen, open, close } = usePopper(reference, popper, {
@@ -61,6 +54,12 @@ export default {
     }
 
     onClickOutside(popper, close)
+
+    watch(isOpen, (open) => {
+      if (!open) {
+        ctx.emit('update:modelValue', date.value)
+      }
+    })
 
     return {
       isOpen,
