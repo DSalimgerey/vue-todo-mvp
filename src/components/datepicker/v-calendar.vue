@@ -632,7 +632,7 @@ export default {
   @apply !font-bold !text-sky-600;
 }
 .v-calendar__day--focused {
-  @apply border-sky-600 rounded-[2px] ring ring-sky-600/10 !bg-sky-600/10;
+  @apply border-sky-600 rounded-[2px] ring-[2px] ring-sky-600/10 !bg-sky-600/10;
 }
 
 .v-calendar__day--range-start {
