@@ -298,42 +298,6 @@ export default {
     }
   },
 
-  watch: {
-    // isRange: {
-    //   handler(value) {
-    //     if (value) {
-    //       if (isArray(this.value)) {
-    //         // o is object with two properties which has as values formatted
-    //         // date strings : { start: BASE_DATE_FORMAT, end: BASE_DATE_FORMAT }
-    //         const o = this.value.reduce((acc, d, i) => {
-    //           // if some how props.value has more than two elements, as object property values
-    //           // should be returned first and second array element and others should be skipped
-    //           return i > 1
-    //             ? acc
-    //             : {
-    //                 ...acc,
-    //                 [i <= 0 ? 'start' : 'end']: dayjs(d).format(BASE_DATE_FORMAT)
-    //               }
-    //         }, {})
-    //         this.values = o
-    //         this.setValues(o)
-    //         this.activeDate = dayjs(o.start, BASE_DATE_FORMAT).toDate()
-    //         console.log(this.activeDate)
-    //       } else {
-    //         const formattedValue = format(this.value, BASE_DATE_FORMAT)
-    //         this.values = { start: formattedValue, end: formattedValue }
-    //         this.setValues({ start: formattedValue, end: formattedValue })
-    //         this.activeDate = this.value
-    //       }
-    //       this.submitRanges()
-    //       this.focusRangeInput(this.$refs.end).then(() => this.focusRangeEnd())
-    //     } else {
-    //       this.$emit('update:value', isArray(this.value) ? this.value[0] : this.value)
-    //     }
-    //   }
-    // }
-  },
-
   mounted() {
     this.focusRangeInput(this.$refs.start).then(() => this.focusRangeStart())
     document.addEventListener('click', this.focusCalendar)
