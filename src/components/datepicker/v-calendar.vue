@@ -474,9 +474,8 @@ export default {
         >
           <!-- start range input -->
           <div
-            class="w-[fit-content] h-[fit-content] flex flex-col"
+            class="w-[168px] h-[fit-content] flex flex-col"
             :class="[
-              isRange ? 'w-[fit-content]' : 'w-[168px]',
               startValueErrorMessage || startTimeErrorMessage ? 'h-[fit-content]' : 'h-[22px]'
             ]"
           >
@@ -485,8 +484,8 @@ export default {
               :class="[
                 isRange && isRangeStartFocused
                   ? 'border-sky-600 bg-blue-500/5 ring-blue-500/10 focus-within:ring-2'
-                  : 'w-full bg-gray-50 border-gray-400',
-                isRange ? (isTime ? 'w-full' : 'w-[82px]') : 'w-[168px]',
+                  : 'bg-gray-50 border-gray-400',
+                isRange ? (isTime ? 'w-full' : 'w-[82px]') : 'w-full',
                 {
                   'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
                     startValueErrorMessage || startTimeErrorMessage
@@ -496,7 +495,8 @@ export default {
               <input
                 v-model="startValue"
                 ref="start"
-                class="w-full bg-[transparent] focus:outline-none text-[12px] px-[4px]"
+                class="bg-[transparent] focus:outline-none text-[12px] px-[4px]"
+                :class="[isRange ? (isTime ? 'w-full' : 'w-[82px]') : 'w-full']"
                 type="text"
                 :placeholder="isRange ? 'Start date' : 'Date'"
                 @focus="focusRangeStart"
@@ -540,7 +540,7 @@ export default {
               :class="[
                 isRange && isRangeEndFocused
                   ? 'border-sky-600 bg-blue-500/5 ring-blue-500/10 focus-within:ring-2'
-                  : 'w-full bg-gray-50 border-gray-400',
+                  : ' bg-gray-50 border-gray-400',
                 isRange ? (isTime ? 'w-full' : 'w-[82px]') : 'w-full',
                 {
                   'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
