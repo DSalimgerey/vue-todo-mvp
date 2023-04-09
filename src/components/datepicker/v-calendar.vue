@@ -656,7 +656,7 @@ export default {
   @apply w-[fit-content] h-[fit-content] grid grid-rows-6 grid-cols-7;
 }
 .v-calendar__day {
-  @apply w-[24px] h-[24px] text-[12px] flex items-center justify-center hover:bg-gray-100 hover:rounded-[2px] border border-[transparent] leading-3 text-dark-900 outline-none ring-blue-100;
+  @apply w-[24px] h-[24px] text-[12px] flex items-center justify-center hover:bg-gray-100 hover:rounded-[2px] border border-[transparent] leading-3 text-gray-950 outline-none ring-blue-100;
 }
 .v-calendar__day--outside {
   @apply text-gray-400;
@@ -668,16 +668,16 @@ export default {
   @apply !font-bold !text-sky-600;
 }
 .v-calendar__day--focused {
-  @apply border-sky-600 rounded-[2px] ring ring-[2px] ring-sky-600/10 !bg-sky-600/10;
+  @apply border-sky-600 rounded-[2px] ring ring-sky-600/10 !bg-sky-600/10;
 }
 
 .v-calendar__day--range-start {
-  @apply !bg-sky-600/60 text-dark-900 !border-[transparent];
+  @apply !bg-sky-600/60 text-gray-950 !border-[transparent];
   border-top-left-radius: 2px;
   border-bottom-left-radius: 2px;
 }
 .v-calendar__day--range-end {
-  @apply !bg-sky-600/60 text-dark-900 !border-[transparent];
+  @apply !bg-sky-600/60 text-gray-950 !border-[transparent];
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
 }
