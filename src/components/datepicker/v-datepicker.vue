@@ -1,7 +1,5 @@
 <script>
-// TODO (feat): if in range mode both of dates is same display only time of second date-time value
-
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { usePopper } from '../../composables/use-popper'
 import { isArray, isValid } from '../../utils'
@@ -93,17 +91,25 @@ export default {
     },
     displayDate() {
       return isArray(this.modelValue)
-        ? this.modelValue
-            .map((d) =>
+        ? this.modelValue.reduce((acc, d, _, arr) => {
+            const isDatesSame = dayjs(this.modelValue[0], this.computedBaseFormats).isSame(
+              this.modelValue[1],
+              'date'
+            )
+
+            if (this.isTime && isDatesSame) {
+              return [dayjs(arr[0], this.computedBaseFormats).format('MMM D, YYYY H:mm -- H:mm')]
+            }
+            return acc.concat(
               dayjs(d, this.computedBaseFormats).format(this.conditionalDisplayFormats(d))
             )
-            .join(' -- ')
+          }, []).join(' -- ')
         : dayjs(this.modelValue, this.computedBaseFormats).format(
             this.conditionalDisplayFormats(this.modelValue)
           )
     }
   },
-
+ 
   methods: {
     conditionalDisplayFormats(value) {
       return value.includes(':') ? DISPLAY_DATE_FORMAT_WITH_TIME : DISPLAY_DATE_FORMAT
