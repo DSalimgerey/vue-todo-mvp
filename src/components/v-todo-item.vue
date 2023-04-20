@@ -55,7 +55,7 @@ export default {
       <div>
         <p>{{ todo.title }}</p>
       </div>
-      <div class="flex mt-[2px]">
+      <div class="flex">
         <v-datepicker v-model="date"></v-datepicker>
       </div>
     </div>

@@ -128,6 +128,7 @@ export default {
             const updatedEndValue = dayjs(values.value.end.date)
               .set('year', toDate(startValue).getFullYear())
               .format(BASE_DATE_FORMAT)
+
             values.value.start.date = startValue
             values.value.end.date = updatedEndValue
             setFieldValue('start.date', startValue)
@@ -423,7 +424,7 @@ export default {
                   : 'bg-gray-50 border-gray-400',
                 isRange ? (isTime ? 'w-full' : 'w-[82px]') : 'w-full',
                 {
-                  'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
+                  '!border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
                     startValueErrorMessage || startTimeErrorMessage
                 }
               ]"
@@ -479,7 +480,7 @@ export default {
                   : ' bg-gray-50 border-gray-400',
                 isRange ? (isTime ? 'w-full' : 'w-[82px]') : 'w-full',
                 {
-                  'border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
+                  '!border-red-500 bg-red-500/5 focus:border-red-500 ring-red-500/10':
                     endValueErrorMessage || endTimeErrorMessage,
                   'w-full': isTime
                 }
