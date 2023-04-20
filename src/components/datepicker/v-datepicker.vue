@@ -98,7 +98,7 @@ export default {
             )
 
             if (this.isTime && isDatesSame) {
-              return [dayjs(arr[0], this.computedBaseFormats).format('MMM D, YYYY H:mm -- H:mm')]
+              return [dayjs(arr[0], this.computedBaseFormats).format('MMM D, YYYY H:mm'), dayjs(arr[1], this.computedBaseFormats).format('H:mm')]
             }
             return acc.concat(
               dayjs(d, this.computedBaseFormats).format(this.conditionalDisplayFormats(d))
