@@ -70,3 +70,32 @@ export const isValid = (date, format = BASE_DATE_FORMAT, strict = true) =>
   dayjs(date, format, strict).isValid()
 
 export const values = (o) => Object.values(o)
+
+export function dateTimeSplitter(value) {
+  const dates = []
+  const times = []
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      if (value[i].includes(':')) {
+        times.push(value[i].split(' ')[1])
+      }
+      dates.push(value[i].split(' ')[0])
+    }
+  } else {
+    if (value.includes(':')) {
+      times.push(value.split(' ')[1])
+    }
+    dates.push(value.split(' ')[0])
+  }
+  return [dates, times]
+}
+
+export const stringify = (o, range = false, time = false) => {
+  const initialValue = range ? [] : ''
+  const separator = time ? ' ' : ''
+  return values(o).reduce((acc, v, i, arr) => {
+    return range
+      ? acc.concat(values(time ? v : arr[i].date).join(separator))
+      : values(time ? arr[0] : arr[0].date).join(separator)
+  }, initialValue)
+}
